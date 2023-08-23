@@ -1,19 +1,16 @@
 package tw.com.jinglingshop.controller;
 
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tw.com.jinglingshop.model.domain.user.Creditcard;
+
 import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.service.UserService;
 import tw.com.jinglingshop.utils.JwtUtil;
@@ -39,24 +38,12 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-
-//	@PostMapping("/findUserByEmail")
-//	public Result findUserByEmail(@RequestParam String email) {
-//
-//
-//		if (email == null || email.trim().isEmpty() ) {
-//			return Result.error("error");
-//		} else {
-//		Result user = userService.getUserByEmail(email);
-//
-//		return Result.success("succcess", user);
-//		}
-//	}
 	
 	@PostMapping("/findUserByEmail")
 	public Result findUserByEmail(@CookieValue (name ="jwt")String cookieValue ) {
 	    try {
 	    	String email= JwtUtil.getUserEmailFromToken(cookieValue);
+	    	
 
 	        User user = userService.getUserByEmail(email);
 	        return Result.success("success", user);
@@ -195,10 +182,16 @@ public class UserController {
 	
 	
 	@PostMapping("/userPhoto")
-    public Resource userPhoto(@CookieValue (name ="jwt")String cookieValue) {
-		String email= JwtUtil.getUserEmailFromToken(cookieValue);
+    public ResponseEntity<String> userPhoto(@CookieValue (name ="jwt")String cookieValue) {
+		 String email = JwtUtil.getUserEmailFromToken(cookieValue);
+	        String base64Image = userService.loadImageAsResource(email);
+
+	        if (base64Image == null) {
+	        	return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	        }
+	        return ResponseEntity.ok(base64Image);
+	    
 		
-        return userService.loadImageAsResource(email);
     }
 	
 	

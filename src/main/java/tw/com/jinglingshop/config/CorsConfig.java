@@ -25,7 +25,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 // 決定CORS設定的適用範圍，/** 意味著適用全部路徑
                 .allowedOrigins("http://localhost:7777")
                 // 設定請求來源，僅允許來自以上網址的請求會受理
-                // .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 // 允許的Http Method
                 // .allowedHeaders("Content-Type")
                 // 允許的請求頭，以上只允許了Content-Type這個請求類型

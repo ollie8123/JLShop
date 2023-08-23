@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import tw.com.jinglingshop.model.domain.product.MainProductCategory;
 
+
 /**
  * ClassName:MainProductCategoryRepository
  * Package:tw.com.jinglingshop.dao

@@ -2,18 +2,17 @@ package tw.com.jinglingshop.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -234,24 +233,30 @@ public String deleteCreditcard(Integer id) {
 	}
 	
 
-public Resource loadImageAsResource(String email) {
-    try {
-    	Optional<User> existsEamil = userRepository.findByEmail(email);
-    	
-    	User userData = existsEamil.get();
-    	String filename = userData.getPhotoPath();
-    	
-        Path file = photoPath.resolve(filename);
-        Resource resource = new UrlResource(file.toUri());
-        if (resource.exists() || resource.isReadable()) {
-            return resource;
-        } else {
-            throw new RuntimeException("Failed to read file: " + filename);
+public String loadImageAsResource(String email) {
+	try {
+        Optional<User> existsEmail = userRepository.findByEmail(email);
+
+        if (!existsEmail.isPresent()) {
+            return null;
         }
-    } catch (MalformedURLException e) {
-        throw new RuntimeException("Failed to read file: " +e);
+
+        User userData = existsEmail.get();
+        String filename = userData.getPhotoPath();
+
+        if (filename == null) {
+            return null; // 如果filename為null，直接返回
+        }
+
+        Path file = photoPath.resolve(filename);
+        byte[] fileBytes = Files.readAllBytes(file);
+        return Base64.getEncoder().encodeToString(fileBytes);
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to read file: " + e.getMessage(), e);
     }
-}
+
+ }
+
 
 	
 	

@@ -34,7 +34,10 @@ public class Seller {
     private User user;
 
     private Boolean isEnable = true;
-
+    
+    private String storeName;
+    
+   
     @CreationTimestamp
     @JsonProperty(access = Access.READ_ONLY)
     // 序列化時僅可讀，不可寫入
