@@ -25,10 +25,6 @@ public class ProductPageController {
     @Autowired
     ProductPageService service;
 
-    @GetMapping("/select")
-    public Result indexSelect(@RequestBody Map<String,Object> aaa){
-        List<String> select = service.select((String) aaa.get("select"));
-            return  Result.success(select);
-    }
+
 
 }

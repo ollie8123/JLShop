@@ -32,8 +32,9 @@ public class MainProductCategoryService {
     public List<String[]>  selectMainProductCategory(){
         return mainProductCategoryRepository.selectMainProductCategory();
     }
+
     //根據關鍵字獲取相關的類名與總數量
-    public List<Map<String, Object>>  getAllMainProductCategory(String keyword){
+    public List<Map<String, Object>>  selectMainProductCategoryBykeyword(String keyword){
         List<Map<String, Object>> categorys = mainProductCategoryRepository.findMainProductCategoryNameAndCount(keyword);
         return categorys;
     }

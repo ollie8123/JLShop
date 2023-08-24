@@ -34,9 +34,9 @@ public class UserService {
 	
 	@Autowired
 	private CreditcardRepository creditcardRepository;
-	
+
 	private final Path photoPath = Paths.get("src/image/userPhoto");
-	
+
 
 
 	public Result addUser(User user) {
@@ -188,29 +188,29 @@ public class UserService {
 		}
 		
 	}
-	
-	
+
+
 	public Creditcard addCreditcard(Creditcard creditcard) {
-		
+
 		if(creditcard != null) {
-			
+
 			return creditcardRepository.save(creditcard);
-			
+
 		}
-		
+
 		return null;
 
 	}
-	
+
 public List<Creditcard> findUserCreditcard(String email) {
-		
+
 	Optional<User> existsEamil = userRepository.findByEmail(email);
-	
+
 	if(existsEamil.isPresent()) {
 		User user = existsEamil.get();
-		
+
 		List<Creditcard> creditcardInfoList = creditcardRepository.findAllByUserId(user.getId());
-	
+
 		 return creditcardInfoList;
 	}
 	 return new ArrayList<>();
@@ -218,24 +218,25 @@ public List<Creditcard> findUserCreditcard(String email) {
 	}
 
 public String deleteCreditcard(Integer id) {
-	
+
 	Optional<Creditcard> existsId = creditcardRepository.findById(id);
-	
+
 	if(existsId.isPresent()) {
 		Creditcard creditcard = existsId.get();
-		
+
 		creditcardRepository.delete(creditcard);
-	
+
 		 return "success";
 	}
 	 return "fail";
 
 	}
-	
+
 
 public String loadImageAsResource(String email) {
 	try {
         Optional<User> existsEmail = userRepository.findByEmail(email);
+
 
         if (!existsEmail.isPresent()) {
             return null;
@@ -248,6 +249,7 @@ public String loadImageAsResource(String email) {
             return null; // 如果filename為null，直接返回
         }
 
+
         Path file = photoPath.resolve(filename);
         byte[] fileBytes = Files.readAllBytes(file);
         return Base64.getEncoder().encodeToString(fileBytes);
@@ -258,7 +260,5 @@ public String loadImageAsResource(String email) {
  }
 
 
-	
-	
 
 }

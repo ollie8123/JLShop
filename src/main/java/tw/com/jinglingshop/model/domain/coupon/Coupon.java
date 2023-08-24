@@ -41,11 +41,19 @@ public class Coupon {
     @Column(columnDefinition = "DECIMAL(2,2)")
     private Float discountRate;
 
+    private Integer discountMaximum;
+
     private Short discountAmount;
 
     private Short miniumSpendingAmount;
 
     private Byte perPersonQuota;
+
+    private Integer availableNumber;
+
+    private Integer received;
+
+    private Integer used;
 
     @CreationTimestamp
     @JsonProperty(access = Access.READ_ONLY)

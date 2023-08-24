@@ -36,8 +36,12 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         System.out.println("發送請求的路徑為:" + uri);
         if (
          uri.startsWith("/login") ||
-         uri.startsWith("/public") || // 放行路徑的URL開頭
-        uri.startsWith("/") // 驗證器放行所有路徑，測試用，網站正式上線時要調整
+         uri.startsWith("/public")||
+         uri.startsWith("/userLogin")||
+         uri.startsWith("/findUserByEmail")||
+         uri.startsWith("/userPhoto")||
+        uri.startsWith("/addUser")  //放行路徑的URL開頭
+       // uri.startsWith("/") // 驗證器放行所有路徑，測試用，網站正式上線時要調整
         ) {
             System.out.println("路徑為放行路徑");
             return true;

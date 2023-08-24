@@ -34,8 +34,6 @@ public class LoginController {
 
     @PostMapping("/userLogin")
     public ResponseEntity<String> userLogin(@RequestParam String email, @RequestParam String password, HttpServletResponse response) {
-        System.out.println("進入/userLogin");
-        System.out.println(email);
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("登入失敗");
         }
@@ -88,7 +86,7 @@ public class LoginController {
         if (google.containsKey("jwt")) {
             System.out.println(google.get("jwt"));
         }
-        Map<String, String> googles = (Map<String, String>) google.get("aaa");
+        Map<String, String> googles = (Map<String, String>) google.get("googleMsg");
         String email = googles.get("email");
         System.out.println(email);
         String token = JwtUtil.GenerateToken(email);
