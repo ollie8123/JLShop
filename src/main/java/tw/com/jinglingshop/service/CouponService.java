@@ -1,15 +1,24 @@
 package tw.com.jinglingshop.service;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import tw.com.jinglingshop.model.dao.CouponDetailRepository;
 import tw.com.jinglingshop.model.dao.CouponRepository;
 import tw.com.jinglingshop.model.dao.ProductPageRepository;
+import tw.com.jinglingshop.model.dao.SellerRepository;
 import tw.com.jinglingshop.model.dao.UserRepository;
 import tw.com.jinglingshop.model.domain.coupon.Coupon;
 import tw.com.jinglingshop.model.domain.coupon.CouponDetail;
 import tw.com.jinglingshop.model.domain.product.ProductPage;
+import tw.com.jinglingshop.model.domain.user.Seller;
 import tw.com.jinglingshop.model.domain.user.User;
 
 import java.sql.Date;
@@ -30,14 +39,16 @@ import java.util.Optional;
  */
 @Service
 public class CouponService {
-    @Autowired
-    CouponRepository couponRepository;
-    @Autowired
-    ProductPageRepository productPageRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    CouponDetailRepository couponDetailRepository;
+	
+	
+	@Autowired
+	private CouponRepository couponRepository;
+	@Autowired
+	private ProductPageRepository productPageRepository;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private CouponDetailRepository couponDetailRepository;
 
     //根據商品頁面回傳賣家優惠券及使用者持有的此賣家優惠券
     public HashMap<String,Object> findSellerCouponByPageId(Integer pageId,String userEmail){
@@ -52,7 +63,6 @@ public class CouponService {
                 couponMap.put("startTime",c.getStartTime());
                 couponMap.put("endTime",c.getEndTime());
                 couponMap.put("minSpending",c.getMiniumSpendingAmount());
-                couponMap.put("perPersonQuota",c.getPerPersonQuota());
                 couponMap.put("perPersonQuota",c.getPerPersonQuota());
                 if(c.getDiscountRate()!=null){
                     couponMap.put("type","rate");
@@ -118,4 +128,61 @@ public class CouponService {
         return coupons;
     }
 
+    public Coupon insert(Coupon coupon) {
+        return couponRepository.save(coupon);
+    }
+
+    public List<Coupon> findAll() {
+        return couponRepository.findAll();
+    }
+
+    public Page<Coupon> getPaginatedData(int pageNumber, int pageSize,Integer sellerId) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        LocalDateTime currentTime = LocalDateTime.now();
+        return couponRepository.findValidity(pageable, currentTime, sellerId);
+    }
+
+    public Page<Coupon> getNoVailbleNumber(int pageNumber, int pageSize,Integer sellerId) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        LocalDateTime currentTime = LocalDateTime.now();
+       
+//        Seller seller = sellerRepo.findById(sellerId).get();
+        return couponRepository.findNoVailbleNumber(pageable, currentTime,sellerId);
+    }
+
+    public Page<Coupon> getPaginatedDataExpired(int pageNumber, int pageSize,Integer sellerId) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        LocalDateTime currentTime = LocalDateTime.now();
+        System.out.println(currentTime);
+        return couponRepository.findExpired(pageable, currentTime, sellerId);
+    }
+
+    public Integer findSellerIdByEmail(String email) {
+        return couponRepository.findSellerIdByEmail(email);
+    }
+
+    public Coupon findById(Integer id) {
+        Optional<Coupon> findById = couponRepository.findById(id);
+        Coupon coupon = findById.get();
+        return coupon;
+    }
+
+    public void deleteById(Integer id) {
+        couponRepository.deleteById(id);
+    }
+
+    public Coupon edit(Coupon coupon) {
+        Coupon edited = couponRepository.findById(coupon.getId()).get();
+        System.out.println("edited:"+edited);
+        
+        edited.setStartTime(coupon.getStartTime());
+        edited.setEndTime(coupon.getEndTime());
+        edited.setDiscountAmount(coupon.getDiscountAmount());
+        edited.setDiscountMaximum(coupon.getDiscountMaximum());
+        edited.setMiniumSpendingAmount(coupon.getMiniumSpendingAmount());
+        edited.setAvailableNumber(coupon.getAvailableNumber());
+      
+        return couponRepository.save(edited);
+
+    }
 }

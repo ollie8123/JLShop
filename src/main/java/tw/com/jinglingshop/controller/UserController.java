@@ -20,12 +20,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tw.com.jinglingshop.model.domain.user.Creditcard;
-
 import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.service.UserService;
 import tw.com.jinglingshop.utils.JwtUtil;
@@ -187,12 +185,30 @@ public class UserController {
 	        String base64Image = userService.loadImageAsResource(email);
 
 	        if (base64Image == null) {
+	        	
 	        	return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	        	
 	        }
+	    	
 	        return ResponseEntity.ok(base64Image);
 	    
 		
     }
+	
+	
+	@PostMapping("/checkUserByEmail")
+	public Result checkUserByEmail(@RequestBody User user ) {
+	    try {
+	    	String email = user.getEmail();
+	    	
+
+	        User userList = userService.getUserByEmail(email);
+	        return Result.success("success", userList);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return Result.error("Error");
+	    }
+	}
 	
 	
 	

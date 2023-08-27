@@ -25,4 +25,12 @@ public interface CouponDetailRepository extends JpaRepository<CouponDetail,Integ
     //根據couponIds
     @Query("select cd from  CouponDetail cd where cd.user.id=:userId AND cd.coupon.id in:couponIds")
     List<CouponDetail>selectCurrentlyAvailableByUserIdAndSellerId(@Param("userId")Integer userId,@Param("couponIds")List<Integer> couponIds);
+
+    Optional<CouponDetail> findByUserIdAndCouponId(Integer userId, Integer couponId);
+    
+    List<CouponDetail> findAllByUserId(Integer userId);
+
+
+
+
 }
