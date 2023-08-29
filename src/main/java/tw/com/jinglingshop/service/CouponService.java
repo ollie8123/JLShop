@@ -185,4 +185,10 @@ public class CouponService {
         return couponRepository.save(edited);
 
     }
+    public Coupon stop(Coupon coupon) {
+        Coupon edited = couponRepository.findById(coupon.getId()).get();
+        edited.setAvailableNumber(0);
+        return couponRepository.save(edited);
+
+    }
 }

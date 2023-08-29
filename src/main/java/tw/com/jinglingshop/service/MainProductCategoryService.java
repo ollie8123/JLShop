@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import tw.com.jinglingshop.model.dao.MainProductCategoryRepository;
-
+import tw.com.jinglingshop.model.domain.product.MainProductCategory;
+import tw.com.jinglingshop.model.domain.product.SecondProductCategory;
 
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -37,5 +39,16 @@ public class MainProductCategoryService {
     public List<Map<String, Object>>  selectMainProductCategoryBykeyword(String keyword){
         List<Map<String, Object>> categorys = mainProductCategoryRepository.findMainProductCategoryNameAndCount(keyword);
         return categorys;
+    }
+
+    public List<SecondProductCategory>  getSecondCategoriesByMainCategoryId(Integer mainProductCategoryId){
+        Optional<MainProductCategory> rawData = mainProductCategoryRepository.findById(mainProductCategoryId);
+
+        if(rawData.isPresent()){
+            List<SecondProductCategory> secondProductCategories = rawData.get().getSecondProductCategories();
+            return secondProductCategories;
+        }else{
+            return null;
+        }
     }
 }

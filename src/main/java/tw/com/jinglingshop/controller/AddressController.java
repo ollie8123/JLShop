@@ -1,5 +1,6 @@
 package tw.com.jinglingshop.controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +115,10 @@ public class AddressController {
 		String email = JwtUtil.getUserEmailFromToken(cookieValue);
 
 		List<ConvenienceStoreAddress> storeAddress = addressService.findUserStoreAddress(email);
+		
+		 if (storeAddress == null || storeAddress.isEmpty()) {
+		        return Result.success("No store address found", Collections.emptyList());
+		    }
 
 		return Result.success("success", storeAddress);
 	}

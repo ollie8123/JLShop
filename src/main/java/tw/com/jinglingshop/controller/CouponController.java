@@ -100,6 +100,18 @@ public class CouponController {
 			Coupon finded = couponService.edit(coupon);
 			return Result.success(finded);			
 		}catch(Exception e) {
+			System.out.println("errrrrrrrrrrrrrro");
+			return Result.error();}
+	}
+	
+	@PostMapping("/stop")
+	public Result stopById(@RequestBody Coupon coupon) {
+		
+		try {
+			Coupon finded = couponService.stop(coupon);
+			return Result.success(finded);			
+		}catch(Exception e) {
+			System.out.println("errrrrrrrrrrrrrro");
 			return Result.error();}
 	}
 
