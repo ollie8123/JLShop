@@ -18,20 +18,12 @@ public class BankAccountService {
 	
 	
 	public BankAccount addBankAccount(BankAccount bank) {
-		
-		
 		if (bank != null) {
 
 			return bankAccountRepository.save(bank);
 
 		}
-
 		return null;
-		
-		
-	
-		
-		
 	}
 
 }

@@ -12,9 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tw.com.jinglingshop.model.dao.ProductRepository;
+import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.service.*;
 import tw.com.jinglingshop.utils.JwtUtil;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,18 +60,35 @@ public class PublicController {
     @Autowired
     ProductPagePhotoService productPagePhotoService;
 
+    @Autowired
+    UserService userService;
+
     //測試文件編輯器
     @PostMapping("testText")
     public void  testText(@RequestParam Map<String,Object> aaa){
         System.out.println( aaa);
     }
 
+    //根據頁面id獲取賣家圖片
+    @PostMapping("/productPageSellerPhoto")
+    public ResponseEntity<String> userPhoto(@RequestBody HashMap<String,Integer> body) {
+        System.out.println("進入");
+        Integer ProductPageId = body.get("ProductPageId");
+        System.out.println(ProductPageId);
 
+        ProductPage productPage = productPageService.productPagefindById(ProductPageId);
+        String base64Image = userService.loadImageAsResource(productPage.getSeller().getUser().getEmail());
+        if (base64Image == null) {
+
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+        }
+        return ResponseEntity.ok(base64Image);
+    }
 
     //獲取賣場商品前五筆最新商品
     @GetMapping("/SellerTop5Product")
     public Result SellerTop5Product(@Param("productPageId")Integer productPageId){
-        System.out.println(productPageId);
         ArrayList<Map<String, Object>> maps = productPageService.selectSellerTop5Product(productPageId);
         return Result.success(maps);
     }
@@ -161,7 +182,9 @@ public class PublicController {
                                            @RequestParam(value = "type", required = false)String type,
                                            @RequestParam(value = "MinPrice", required = false)Optional<Integer> MinPrice,
                                            @RequestParam(value = "MaxPrice", required = false)Optional<Integer> MaxPrice,
-                                           @RequestParam(value = "evaluate", required = false)Optional<Integer> evaluate){
+                                           @RequestParam(value = "evaluate", required = false)Optional<Integer> evaluate,
+                                           @RequestParam(value = "chronological", required = false)Optional<String> chronological
+                                           ){
         List<Map<String, Object>> category = mainProductCategoryService.selectMainProductCategoryBykeyword(keyword);
         HashMap<String, Object> objectObjectHashMap = new HashMap<>();
         objectObjectHashMap.put("class",category);
@@ -169,23 +192,29 @@ public class PublicController {
         if(keyword.isEmpty()){
             return  Result.success();
         }
-        if(evaluate.isPresent()){
-            System.out.println(evaluate.get());
+        Pageable pageable=(page.isPresent()&&size.isPresent())? PageRequest.of(page.get(),size.get()):PageRequest.of(0,3);
+        String sortOrder;
+        if(chronological.isPresent()){
+            if("ASC".equals(chronological.get())){
+                sortOrder="ASC";
+            }else{
+                sortOrder="DESC";
+            }
+        }else {
+            sortOrder="DESC";
         }
-        //判斷頁碼
-        Pageable pageable=(page.isPresent()&&size.isPresent())? PageRequest.of(page.get(),size.get()):PageRequest.of(0,5);
         //判斷主類
         if (type != null){
             if(!type.isEmpty()){
                 System.out.println("類別判斷");
-                Page<List<Map<String, Object>>> strings = productPageService.keywordAndCategorySelectProductPages(keyword,type,pageable,MinPrice,MaxPrice);
-                objectObjectHashMap.put("products",strings);
+                HashMap<String, Object> hashMap = productPageService.keywordAndCategorySelectProductPages(keyword, type, pageable, MinPrice, MaxPrice, evaluate, sortOrder);
+                objectObjectHashMap.put("products",hashMap);
                 return  Result.success(objectObjectHashMap);
             }
         }
         System.out.println("直接判斷");
-        Page<List<Map<String, Object>>> strings = productPageService.keywordSelectProductPages(keyword,pageable,MinPrice,MaxPrice);
-        objectObjectHashMap.put("products",strings);
+        HashMap<String, Object> hashMap = productPageService.keywordSelectProductPages(keyword, pageable, MinPrice, MaxPrice, evaluate, sortOrder);
+        objectObjectHashMap.put("products",hashMap);
         return  Result.success(objectObjectHashMap);
     }
     //搜尋所有產品類型

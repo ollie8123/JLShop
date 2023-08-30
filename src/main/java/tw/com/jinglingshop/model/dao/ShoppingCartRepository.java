@@ -28,9 +28,9 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart,Integ
 
 
      //查詢賣家id、帳號、最後更新時間，根據最後更新時間排序
-     @Query("select s.seller.id AS id,s.seller.user.account AS account ,Max(s.dataUpdateTime) as latest_update_time " +
+     @Query("select s.seller.id AS id,s.seller.storeName AS sellerName ,s.seller.user.account AS account ,Max(s.dataUpdateTime) as latest_update_time " +
              "from  ShoppingCart s where s.user.id=:userId " +
-             "group by s.seller.id,s.seller.user.account order by latest_update_time DESC ")
+             "group by s.seller.id,s.seller.user.account,s.seller.storeName order by latest_update_time DESC ")
      Page<Map<String,Object>> findAllSellerIdByUserId(@Param("userId") Integer userId, Pageable pageable);
 
 

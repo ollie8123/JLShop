@@ -27,6 +27,8 @@ public class ProductReviewService {
     @Autowired
     ProductReviewRepository productReviewRepository;
 
+    @Autowired
+    UserService userService;
     //根據商品頁面id搜尋平均評價、1~5星評價
     public Map<String,Object>  selectProductPageAllReviewMsg(Integer ProductPageId) {
         Map<String, Object> remap = new HashMap<>();
@@ -80,7 +82,9 @@ public class ProductReviewService {
         for (ProductReview pr:productReviews) {
             Map<String, Object> hashMap = new HashMap<>();
             hashMap.put("userAccount", pr.getUser().getAccount());
-            hashMap.put("userPhotoPath", pr.getUser().getPhotoPath());
+
+            String base64Image = userService.loadImageAsResource(pr.getUser().getEmail());
+            hashMap.put("userPhotoPath", base64Image);
             hashMap.put("level", pr.getLevel());
             hashMap.put("mainId", pr.getOrderDetail().getProduct().getMainSpecificationClassOption().getId());
             hashMap.put("mainClassName", pr.getOrderDetail().getProduct().getMainSpecificationClassOption().getClassName());

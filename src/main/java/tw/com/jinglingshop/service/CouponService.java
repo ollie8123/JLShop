@@ -50,6 +50,18 @@ public class CouponService {
 	@Autowired
 	private CouponDetailRepository couponDetailRepository;
 
+    //根據使用者id跟CouponId(非CouponDetailId)找出CouponDetail
+    public CouponDetail findCouponDetailByUserIdAndCouponId(Integer userId,Integer CouponId){
+        Optional<CouponDetail> CouponDetail = couponDetailRepository.findCouponDetailByUserIdAndCouponId(userId, CouponId);
+        if(CouponDetail.isPresent()){
+            return CouponDetail.get();
+        }else {
+            return null;
+        }
+    }
+
+
+
     //根據商品頁面回傳賣家優惠券及使用者持有的此賣家優惠券
     public HashMap<String,Object> findSellerCouponByPageId(Integer pageId,String userEmail){
         HashMap<String,Object>userCouponAndSellerCoupon=new HashMap<>();

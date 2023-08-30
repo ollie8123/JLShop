@@ -30,8 +30,17 @@ public class CouponDetailService {
     @Autowired
     private CouponRepository couponRepository;
 
-    public List<CouponDetail> selectCurrentlyAvailableCouponDetailByUserIdAndSellerId(Integer userId, List<Integer> couponIds){
-        return  couponDetailRepository.selectCurrentlyAvailableByUserIdAndSellerId(userId, couponIds);
+    public boolean couponDetailSave(CouponDetail couponDetail) {
+        try {
+            couponDetailRepository.save(couponDetail);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    public List<CouponDetail> selectCurrentlyAvailableCouponDetailByUserIdAndSellerId(Integer userId, List<Integer> couponIds) {
+        return couponDetailRepository.selectCurrentlyAvailableByUserIdAndSellerId(userId, couponIds);
     }
     
     public Boolean addUserCoupon(CouponDetail couponDetail ) {

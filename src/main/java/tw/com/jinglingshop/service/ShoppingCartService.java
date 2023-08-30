@@ -1,11 +1,15 @@
 package tw.com.jinglingshop.service;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import tw.com.jinglingshop.model.dao.ProductPagePhotoRepository;
 import tw.com.jinglingshop.model.dao.SellerRepository;
 import tw.com.jinglingshop.model.dao.ShoppingCartRepository;
@@ -17,6 +21,7 @@ import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
 import tw.com.jinglingshop.model.domain.user.Seller;
 import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.utils.Result;
+import tw.com.jinglingshop.utils.photoUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,23 +41,67 @@ import java.util.stream.Stream;
 @Service
 public class ShoppingCartService {
     @Autowired
-    ShoppingCartRepository shoppingCartRepository;
+   private ShoppingCartRepository shoppingCartRepository;
     @Autowired
-    ProductPagePhotoRepository productPagePhotoRepository;
+    private ProductPagePhotoRepository productPagePhotoRepository;
+    @Autowired
+    private SellerRepository sellerRepository;
+    @Autowired
+    private CouponService couponService;
+    @Autowired
+    private  UserService userService;
+    @Autowired
+    private  ProductService productService;
+    @Autowired
+    private CouponDetailService couponDetailService;
 
-    @Autowired
-    SellerRepository sellerRepository;
 
-    @Autowired
-    CouponService couponService;
+    //檢查選擇的商品庫存
 
-    @Autowired
-    UserService userService;
-    @Autowired
-    ProductService productService;
+    public boolean checkAvailability(@RequestBody String body) {
+        JSONArray objects = new JSONArray(body);
+        if(objects.length()>0){
+            for (int i=0;i<objects.length();i++){
+                int id = objects.getJSONObject(i).getInt("id");
+                int count =  objects.getJSONObject(i).getInt("count");
+                Optional<ShoppingCart> ShoppingCart = shoppingCartRepository.findById(id);
+                if(ShoppingCart.isPresent()){
+                    //如果庫存大於等於選擇數量
+                    if( ShoppingCart.get().getProduct().getStocks()<count){
+                        return false;
+                    }
+                }else {
+                    return false;
+                }
+            }
+            return true;
+        }else {
+            return false;
+        }
+    }
+    public boolean  deleteShoppingCart(ShoppingCart shoppingCart){
+        try {
+            shoppingCartRepository.delete(shoppingCart);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
 
-    @Autowired
-    CouponDetailService couponDetailService;
+    public ShoppingCart  selectShoppingCartById(Integer CartId){
+        Optional<ShoppingCart> ShoppingCart = shoppingCartRepository.findById(CartId);
+        if(ShoppingCart.isPresent()){
+            return ShoppingCart.get();
+        }else {
+            return null;
+        }
+
+    }
+
+    public List<ShoppingCart>  selectShoppingCartByCartIds(ArrayList<Integer> CartIds){
+      return shoppingCartRepository.selectShoppingCartByCartIds(CartIds);
+    }
+
 
     //新增商品進購物車
     public  String addShoppingCart(String email,Integer productPageId,Integer mainId,Integer secondId,Integer count) {
@@ -105,6 +154,7 @@ public class ShoppingCartService {
             HashMap<String, Object> resMap = new HashMap<>();
             resMap.put("id",i.get("id"));
             resMap.put("account",i.get("account"));
+            resMap.put("sellerName",i.get("sellerName"));
             List<ShoppingCart> selectList = shoppingCartRepository.findAllByUserIdAndSellerId(user.getId(), (Integer) i.get("id"));
             List<HashMap<String,Object>> listMsg=new ArrayList<>();
             for (ShoppingCart s:selectList) {
@@ -119,12 +169,21 @@ public class ShoppingCartService {
                 productMsg.put("productPrice",s.getProduct().getPrice());
                 productMsg.put("productPage",s.getProduct().getProductPage().getId());
                 productMsg.put("productCount",s.getProductQuantity());
-                productMsg.put("stocks",s.getProduct().getStocks());
+                if(s.getProduct().getStocks()>0){
+                    productMsg.put("stocks",s.getProduct().getStocks());
+                    productMsg.put("stocksType","inStock");
+                }else {
+                    productMsg.put("stocks",s.getProductQuantity());
+                    productMsg.put("stocksType","emptyStocks");
+                }
                 if("~NoSecondSpecificationClass".equals(s.getProduct().getMainSpecificationClassOption().getClassName())){
                     ProductPagePhoto productPagePhoto = productPagePhotoRepository.selectProductPagePhotoProductSerialNumberByPageId(s.getProduct().getProductPage().getId());
-                    productMsg.put("productPhoto",productPagePhoto.getPhotoPath());
+                   // productMsg.put("productPhoto",productPagePhoto.getPhotoPath());
+                    productMsg.put("productPhoto",photoUtil.getBase64ByPath(productPagePhoto.getPhotoPath()));
+
                 }else {
-                    productMsg.put("productPhoto",s.getProduct().getMainSpecificationClassOption().getPhotoPath());
+                   // productMsg.put("productPhoto",s.getProduct().getMainSpecificationClassOption().getPhotoPath());
+                    productMsg.put("productPhoto",photoUtil.getBase64ByPath(s.getProduct().getMainSpecificationClassOption().getPhotoPath()));
                 }
                 listMsg.add(productMsg);
             }
@@ -166,7 +225,7 @@ public class ShoppingCartService {
             shoppingCartRepository.deleteShoppingCartsByIds(idList);
     }
 
-    //搜尋當前可用的優惠券、與使用者持有的優惠券、
+    //根據選取商品，搜尋當前可用的優惠券、與使用者持有的優惠券並計算優惠券
     public  ArrayList<HashMap<String,Object>>  shoppingCartsBestCoupon(ArrayList<Integer> idList, String email) {
         ArrayList<HashMap<String,Object>> resList = new ArrayList<>();
         User user = userService.getUserByEmail(email);
@@ -181,6 +240,7 @@ public class ShoppingCartService {
             List<Coupon> nowCoupon = couponService.selectEfficientCouponByPriceAndSellerId(999999, sellerId);
             //儲存id用陣列
             ArrayList<Integer> couponIds = new ArrayList<>();
+
             for (Coupon c:nowCoupon) {
                 //單筆sellerCoupon訊息陣列
                 HashMap<String, Object> sellerCouponMsg = new HashMap<>();

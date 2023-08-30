@@ -35,6 +35,18 @@ public class ShoppingCartController {
     @Autowired
     ShoppingCartService shoppingCartService;
 
+
+    //檢查選擇的商品庫存
+    @PostMapping("/shoppingCartCheckAvailability")
+    public Result checkAvailability(@RequestBody String body) {
+        boolean b = shoppingCartService.checkAvailability(body);
+        if(b){
+            return Result.success();
+        }else {
+            return Result.error();
+        }
+    }
+
     //將商品加入購物車
     @PostMapping("/productAddShoppingCart")
     public Result productAddShoppingCart(@RequestBody String body,@CookieValue(name ="jwt")String cookieValue){
@@ -111,4 +123,25 @@ public class ShoppingCartController {
            return Result.error();
         }
     }
+
+
+    //根據購物車選取的商品推薦最佳優惠券
+    @PostMapping("/checkoutDetails")
+    public Result checkout(@CookieValue(name ="jwt")String cookieValue,@RequestBody String body){
+        JSONObject object = new JSONObject(body);
+        JSONArray idsJSONArray = object.getJSONArray("cartIds");
+        String email= JwtUtil.getUserEmailFromToken(cookieValue);
+        if(idsJSONArray.length()>0){
+            ArrayList<Integer> idList = new ArrayList<>();
+            for (int i = 0; i < idsJSONArray.length(); i++) {
+                idList.add((Integer) idsJSONArray.get(i));
+            }
+            ArrayList<HashMap<String, Object>> hashMaps = shoppingCartService.shoppingCartsBestCoupon(idList, email);
+            return Result.success(hashMaps);
+        }else {
+            return Result.error();
+        }
+    }
+
+
 }

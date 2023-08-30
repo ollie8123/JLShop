@@ -32,15 +32,19 @@ public interface ProductPageRepository extends JpaRepository<ProductPage,Integer
 
 
     //關鍵字+productPageStatus.id=2(以上架狀態)+頁面設定，獲取商品ID,名稱,圖片,最大最小金額,評價平均
-    @Query("SELECT p.id AS id,p.name AS name,pg.photoPath AS photoPath,MAX(pdt.price) AS maxPrice, MIN(pdt.price) AS minPrice,COALESCE(AVG(pr.level), 0) AS averageRating ,COALESCE(SUM(pdt.sales), 0) AS sales " +
+    @Query("SELECT p.id AS id,p.name AS name,pg.photoPath AS photoPath,MAX(pdt.price) AS maxPrice, MIN(pdt.price) AS minPrice,COALESCE(AVG(pr.level), 0) AS averageRating ,COALESCE(SUM(pdt.sales), 0) AS sales ,p.dataCreateTime AS dataCreateTime " +
             "FROM ProductPage p " +
             "JOIN ProductPagePhoto pg on p.id=pg.productPage.id " +
             "LEFT JOIN Product pdt on pdt.productPage.id=p.id " +
             "LEFT JOIN OrderDetail  od on od.product.id=pdt.id " +
             "Left JOIN ProductReview pr on pr.orderDetail.id=od.id " +
-            "WHERE p.name LIKE %:keyWord% AND p.productPageStatus.id=2 AND pg.serialNumber=1 AND pdt.price>:minPrice AND pdt.price<:maxPrice " +
-            "GROUP BY p.id,p.name,pg.photoPath")
-    Page<List<Map<String, Object>>> keywordSelectProductPages(@Param("keyWord") String keyWord, Pageable pageable, @Param("minPrice") Integer minPrice, @Param("maxPrice") Integer maxPrice);
+            "WHERE p.name LIKE %:keyWord% AND p.productPageStatus.id=2 AND pg.serialNumber=1 AND pdt.price>=:minPrice AND pdt.price<=:maxPrice AND :sortOrder=:sortOrder " +
+            "GROUP BY p.id,p.name,pg.photoPath,p.dataCreateTime " +
+            "HAVING  COALESCE(AVG(pr.level), 0)>=:level  AND SUM(pdt.stocks) >0 " +
+            "ORDER BY " +
+            " CASE WHEN :sortOrder  = 'ASC' THEN p.dataCreateTime END ASC," +
+            " CASE WHEN :sortOrder  = 'DESC' THEN p.dataCreateTime END DESC"  )
+    Page<List<Map<String, Object>>> keywordSelectProductPages(@Param("keyWord") String keyWord, Pageable pageable, @Param("minPrice") Integer minPrice, @Param("maxPrice") Integer maxPrice,@Param("level") Integer level,@Param("sortOrder") String sortOrder);
 
     //類別+關鍵字+productPageStatus.id=2(以上架狀態)+頁面設定，獲取商品ID,名稱,圖片,最大最小金額,評價平均
     @Query("SELECT p.id AS id,p.name AS name,pg.photoPath AS photoPath,MAX(pdt.price) AS maxPrice, MIN(pdt.price) AS minPrice,COALESCE(AVG(pr.level), 0) AS averageRating ,COALESCE(SUM(pdt.sales), 0) AS sales " +
@@ -49,10 +53,14 @@ public interface ProductPageRepository extends JpaRepository<ProductPage,Integer
             "LEFT JOIN Product pdt on pdt.productPage.id=p.id " +
             "LEFT JOIN OrderDetail  od on od.product.id=pdt.id " +
             "LEFT JOIN ProductReview pr on pr.orderDetail.id=od.id " +
-            "WHERE p.name LIKE %:keyWord% AND p.productPageStatus.id=2 AND pg.serialNumber=1 AND pdt.price>:minPrice AND pdt.price<:maxPrice " +
-            "AND p.secondProductCategory.mainProductCategory.id IN (:idList)" +
-            "GROUP BY p.id,p.name,pg.photoPath")
-    Page<List<Map<String, Object>>> keywordAndCategorySelectProductPages(@Param("keyWord") String keyWord, @Param("idList") List<Integer> idList, Pageable pageable,@Param("minPrice") Integer minPrice,@Param("maxPrice") Integer maxPrice);
+            "WHERE p.name LIKE %:keyWord% AND p.productPageStatus.id=2 AND pg.serialNumber=1 AND pdt.price>=:minPrice AND pdt.price<=:maxPrice AND :sortOrder=:sortOrder " +
+            "AND p.secondProductCategory.mainProductCategory.id IN (:idList)"+
+            "GROUP BY p.id,p.name,pg.photoPath,p.dataCreateTime " +
+            "HAVING   COALESCE(AVG(pr.level), 0)>=:level  AND SUM(pdt.stocks) >0 " +
+            "ORDER BY " +
+            "CASE WHEN :sortOrder  = 'ASC' THEN p.dataCreateTime END ASC," +
+            "CASE WHEN :sortOrder  = 'DESC' THEN p.dataCreateTime END DESC  ")
+    Page<List<Map<String, Object>>> keywordAndCategorySelectProductPages(@Param("keyWord") String keyWord, @Param("idList") List<Integer> idList, Pageable pageable,@Param("minPrice") Integer minPrice,@Param("maxPrice") Integer maxPrice,@Param("level") Integer level,@Param("sortOrder") String sortOrder);
 
     //商品頁面訊息(名稱、最大最小金額、平均評價、總銷量)
     @Query("SELECT p.id AS id,p.name AS name,MAX(pdt.price) AS maxPrice, MIN(pdt.price) AS minPrice,COALESCE(AVG(pr.level), 0) AS averageRating ,COALESCE(SUM(pdt.sales), 0) AS sales  " +

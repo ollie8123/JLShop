@@ -29,7 +29,7 @@ public class SellerService {
     @Autowired
     private SellerRepository sellerRepository;
     @Autowired
-    ProductReviewRepository productReviewRepository;
+	private ProductReviewRepository productReviewRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -38,7 +38,7 @@ public class SellerService {
     public HashMap<String,Object> selectSellerInformation(Integer productPageId){
         Seller seller = sellerRepository.findSellerByProductPagesId(productPageId);
         HashMap<String,Object> hashMap=new HashMap<>();
-        hashMap.put("account",seller.getUser().getAccount());
+        hashMap.put("account",seller.getStoreName());
         hashMap.put("photoPath",seller.getUser().getPhotoPath());
         hashMap.put("dataCreateTime",seller.getUser().getDataCreateTime());
         hashMap.put("productCount", seller.getProductPages().size());
@@ -46,7 +46,16 @@ public class SellerService {
         hashMap.put("productReviewCount", productReviewByProductPageId.size());
         return hashMap;
     }
-    
+    public Seller selectSellerById(Integer sellerId){
+		Optional<Seller> seller = sellerRepository.findById(sellerId);
+		if(seller.isPresent()){
+			return seller.get();
+		}else {
+			return null;
+		}
+	}
+
+
     public Seller addSellerAccount(Seller seller) {
 
 		if (seller != null) {

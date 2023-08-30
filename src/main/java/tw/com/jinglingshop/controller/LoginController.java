@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.service.UserService;
 import tw.com.jinglingshop.utils.JwtUtil;
 import tw.com.jinglingshop.utils.Result;
@@ -80,7 +81,6 @@ public class LoginController {
     }
 
     // 登入按鈕獲取google資料，以email來產生token
-    // 還未做google登入後連接資料庫的操做
     @PostMapping("/login/googleLogin")
     public ResponseEntity<String> google(@RequestBody Map<String, Object> google, HttpServletResponse response){
         if (google.containsKey("jwt")) {
@@ -88,8 +88,14 @@ public class LoginController {
         }
         Map<String, String> googles = (Map<String, String>) google.get("googleMsg");
         String email = googles.get("email");
-        System.out.println(email);
         String token = JwtUtil.GenerateToken(email);
+        if(!userService.findByEmail(email)){
+            User user =new User();
+            user.setEmail(email);
+            user.setName(googles.get("name"));
+            user.setPassword("1234");
+            userService.addUser(user);
+        }
 
         Cookie cookie = new Cookie("jwt", token);
         cookie.setHttpOnly(true);

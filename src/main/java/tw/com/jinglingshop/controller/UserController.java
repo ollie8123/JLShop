@@ -177,22 +177,20 @@ public class UserController {
 		}
 			
 	}
-	
+
+
+
 	
 	@PostMapping("/userPhoto")
     public ResponseEntity<String> userPhoto(@CookieValue (name ="jwt")String cookieValue) {
 		 String email = JwtUtil.getUserEmailFromToken(cookieValue);
 	        String base64Image = userService.loadImageAsResource(email);
-
 	        if (base64Image == null) {
 	        	
 	        	return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	        	
 	        }
-	    	
 	        return ResponseEntity.ok(base64Image);
-	    
-		
     }
 	
 	

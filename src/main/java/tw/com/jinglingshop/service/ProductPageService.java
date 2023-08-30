@@ -1,8 +1,11 @@
 package tw.com.jinglingshop.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,9 +15,11 @@ import tw.com.jinglingshop.model.dao.ProductPageRepository;
 import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
 import tw.com.jinglingshop.utils.JwtUtil;
+import tw.com.jinglingshop.utils.photoUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * ClassName:ProductPageService
@@ -29,6 +34,17 @@ import java.util.stream.Collectors;
 public class ProductPageService {
     @Autowired
     private ProductPageRepository productPageRepository;
+
+
+    public ProductPage productPagefindById(Integer productPageId){
+        Optional<ProductPage> productPage = productPageRepository.findById(productPageId);
+        if (productPage.isPresent()){
+            return productPage.get();
+        }else {
+            return null;
+        }
+    }
+
 
     //查詢商品頁面資料
     public HashMap<String,Object> selectProduct(Integer ProductPageId ){
@@ -86,23 +102,68 @@ public class ProductPageService {
     }
 
     //關鍵字搜尋商品頁
-    public Page<List<Map<String, Object>>> keywordSelectProductPages(String keyword, Pageable pageable, Optional<Integer> MinPrice, Optional<Integer> MaxPrice){
+    public HashMap<String, Object> keywordSelectProductPages(String keyword, Pageable pageable, Optional<Integer> MinPrice, Optional<Integer> MaxPrice,Optional<Integer> evaluate,String sortOrder){
         Integer minPrice=MinPrice.isPresent()?MinPrice.get():0;
         Integer maxPrice=MaxPrice.isPresent()?MaxPrice.get():999999;
-        Page<List<Map<String, Object>>> Pages = productPageRepository.keywordSelectProductPages(keyword,pageable,minPrice,maxPrice);
-        return Pages;
+        Integer level=evaluate.isPresent()?evaluate.get():0;
+
+
+        Page<List<Map<String, Object>>>  Pages = productPageRepository.keywordSelectProductPages(keyword,pageable,minPrice,maxPrice,level,sortOrder);
+        JSONArray jsonArray = new JSONArray(Pages);
+        HashMap<String, Object> resHashMap = new HashMap<>();
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            Map<String, Object> map = new HashMap<String, Object>();
+            for (String key : jsonObject.keySet()) {
+                if(key.equals("photoPath")){
+                    map.put(key, photoUtil.getBase64ByPath((String) jsonObject.get(key)));
+                }else {
+                    Object value = jsonObject.get(key);
+                    map.put(key, value);
+                }
+            }
+            list.add(map);
+        }
+        resHashMap.put("content",list);
+        resHashMap.put("totalElements",Pages.getTotalElements());
+        resHashMap.put("pageSize",Pages.getPageable().getPageSize());
+        System.out.println(list);
+        return resHashMap;
     }
     //關鍵字+類別搜尋商品頁
-    public  Page<List<Map<String, Object>>> keywordAndCategorySelectProductPages(String keyword, String type, Pageable pageable, Optional<Integer> MinPrice,Optional<Integer> MaxPrice){
+    public  HashMap<String, Object> keywordAndCategorySelectProductPages(String keyword, String type, Pageable pageable, Optional<Integer> MinPrice,Optional<Integer> MaxPrice,Optional<Integer> evaluate,String sortOrder){
         Integer minPrice=MinPrice.isPresent()?MinPrice.get():0;
         Integer maxPrice=MaxPrice.isPresent()?MaxPrice.get():999999;
+        Integer level=evaluate.isPresent()?evaluate.get():0;
         List<Integer> list = new ArrayList<>();
         String[] parts = type.split(",");
         for (String part : parts) {
             list.add(Integer.parseInt(part));
         }
-        Page<List<Map<String, Object>>> Pages = productPageRepository.keywordAndCategorySelectProductPages(keyword,list,pageable,minPrice,maxPrice);
-        return Pages;
+        Page<List<Map<String, Object>>> Pages = productPageRepository.keywordAndCategorySelectProductPages(keyword,list,pageable,minPrice,maxPrice,level,sortOrder);
+        JSONArray jsonArray = new JSONArray(Pages);
+        HashMap<String, Object> resHashMap = new HashMap<>();
+        List<Map<String, Object>> newList = new ArrayList<Map<String, Object>>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            Map<String, Object> map = new HashMap<String, Object>();
+            for (String key : jsonObject.keySet()) {
+                if(key.equals("photoPath")){
+                    map.put(key, photoUtil.getBase64ByPath((String) jsonObject.get(key)));
+                }else {
+                    Object value = jsonObject.get(key);
+                    map.put(key, value);
+                }
+            }
+            newList.add(map);
+        }
+        System.out.println(newList);
+        resHashMap.put("content",newList);
+        resHashMap.put("totalElements",Pages.getTotalElements());
+        resHashMap.put("pageSize",Pages.getPageable().getPageSize());
+
+        return resHashMap;
     }
 
     //用頁面id找到賣家id，搜尋此賣家前5筆新增(不包含傳入頁面id)
@@ -120,7 +181,7 @@ public class ProductPageService {
                         .findFirst();
                 if(photoWithSerialNumberOne.isPresent()){
                     Map<String, Object> modifiableMap = new HashMap<>(stringObjectMap);
-                    modifiableMap.put("photo",photoWithSerialNumberOne.get().getPhotoPath());
+                    modifiableMap.put("photo",photoUtil.getBase64ByPath(photoWithSerialNumberOne.get().getPhotoPath()));
                     resList.add(modifiableMap);
                 }
             }
