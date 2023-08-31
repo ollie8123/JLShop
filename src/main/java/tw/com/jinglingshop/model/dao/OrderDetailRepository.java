@@ -1,6 +1,9 @@
 package tw.com.jinglingshop.model.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import tw.com.jinglingshop.model.domain.order.OrderDetail;
 
 /**
@@ -13,6 +16,8 @@ import tw.com.jinglingshop.model.domain.order.OrderDetail;
  * @Version 1.0
  */
 public interface OrderDetailRepository extends JpaRepository<OrderDetail,Integer> {
+	
+	List<OrderDetail> findByOrderId(Integer orderId);
 
 
 }

@@ -17,7 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.jinglingshop.model.dao.CreditcardRepository;
+import tw.com.jinglingshop.model.dao.OrderDetailRepository;
+import tw.com.jinglingshop.model.dao.OrderRepository;
+import tw.com.jinglingshop.model.dao.ProductPageRepository;
+import tw.com.jinglingshop.model.dao.ProductRepository;
 import tw.com.jinglingshop.model.dao.UserRepository;
+import tw.com.jinglingshop.model.domain.order.Order;
+import tw.com.jinglingshop.model.domain.order.OrderDetail;
+import tw.com.jinglingshop.model.domain.product.Product;
+import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.model.domain.user.Creditcard;
 import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.utils.Result;
@@ -33,6 +41,19 @@ public class UserService {
 	
 	@Autowired
 	private CreditcardRepository creditcardRepository;
+	
+	@Autowired
+	private OrderRepository orderRepository ;
+	
+	@Autowired
+	private OrderDetailRepository orderDetailRepository ;
+	
+	@Autowired
+	private ProductRepository productRepository;
+	
+	@Autowired
+	private ProductPageRepository productPageRepository;
+	
 
 	private final Path photoPath = Paths.get("src/image/userPhoto");
 
@@ -257,6 +278,49 @@ public String loadImageAsResource(String email) {
     }
 
  }
+
+public List<Order> findUserOderList(String email) {
+	Optional<User> existsEamil = userRepository.findByEmail(email);
+	
+	if(existsEamil.isEmpty()) {
+		return null;
+	}
+	User userData = existsEamil.get();
+	Integer userId = userData.getId();
+	
+	return orderRepository.findByUserId(userId);
+
+}
+
+public List<OrderDetail> findUserOderDetailList(Integer orderId){
+	
+    return orderDetailRepository.findByOrderId(orderId);
+	
+}
+
+public Product findProducts(Integer productId){
+	
+	Optional<Product> productData = productRepository.findById(productId);
+	return productData.get();
+
+}
+
+public ProductPage findProductName(Integer productPageId){
+	
+	Optional<ProductPage> ProductNameData = productPageRepository.findById(productPageId);
+	return ProductNameData.get();
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

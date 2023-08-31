@@ -33,7 +33,7 @@ public class HomePageService {
 	private ProductRepository productRepository;
 	
 	
-	public List<ProductPage> find40Products() {
+	public List<ProductPage> find20Products() {
 		
 		List<ProductPage>  productsList = productPageRepository.findAll();
 		
@@ -41,7 +41,7 @@ public class HomePageService {
 		Collections.shuffle(productsList);
 				
 		// 返回前40個，或者如果產品數量少於40，返回所有產品
-		return productsList.stream().limit(40).collect(Collectors.toList());
+		return productsList.stream().limit(20).collect(Collectors.toList());
 		
 	}
 	

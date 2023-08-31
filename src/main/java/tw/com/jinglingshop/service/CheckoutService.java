@@ -1,18 +1,15 @@
 package tw.com.jinglingshop.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import tw.com.jinglingshop.model.dao.CreditcardRepository;
 import tw.com.jinglingshop.model.dao.OrderDetailRepository;
+import tw.com.jinglingshop.model.dao.OrderStatusRepository;
+import tw.com.jinglingshop.model.dao.ProductPagePhotoRepository;
+import tw.com.jinglingshop.model.domain.ProductReview;
 import tw.com.jinglingshop.model.domain.coupon.Coupon;
 import tw.com.jinglingshop.model.domain.coupon.CouponDetail;
 import tw.com.jinglingshop.model.domain.order.Order;
@@ -20,12 +17,11 @@ import tw.com.jinglingshop.model.domain.order.OrderDetail;
 import tw.com.jinglingshop.model.domain.order.OrderStatus;
 import tw.com.jinglingshop.model.domain.order.ShoppingCart;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
-import tw.com.jinglingshop.model.domain.user.ConvenienceStoreAddress;
-import tw.com.jinglingshop.model.domain.user.Creditcard;
-import tw.com.jinglingshop.model.domain.user.NormalAddress;
-import tw.com.jinglingshop.model.domain.user.Seller;
-import tw.com.jinglingshop.model.domain.user.User;
+import tw.com.jinglingshop.model.domain.user.*;
+import tw.com.jinglingshop.utils.emailUtil;
 import tw.com.jinglingshop.utils.photoUtil;
+
+import java.util.*;
 
 /**
  * ClassName:CheckoutService
@@ -70,9 +66,12 @@ public class CheckoutService {
     @Autowired
     private  OrderService orderService;
 
+    @Autowired
+    ProductPagePhotoRepository productPagePhotoRepository;
 
 
     public Map<String,Object> checkoutDetails(ArrayList<Integer> cartIds, String email) {
+
         Map<String,Object> res=new HashMap<>();
         List<ShoppingCart> shoppingCarts = shoppingCartService.selectShoppingCartByCartIds(cartIds);
         User user = userService.getUserByEmail(email);
@@ -166,11 +165,18 @@ public class CheckoutService {
 
     //新增訂單
     public String generateOrders(JSONObject object,String userEmail) throws Exception {
+       //ArrayList<List<HashMap<String,Object>>> EmailArray = new ArrayList<>();
+        //email賣家資訊陣列
+        List<HashMap<String,Object>> emailMap = new ArrayList<>();
         int error=0;
         String msg=" ";
         User user = userService.getUserByEmail(userEmail);
         JSONArray sellerOrderList = object.getJSONArray("sellerOrderList");
+
         for(int i=0;i<sellerOrderList.length();i++){
+            //email各賣家資訊
+            HashMap<String, Object> sellerEmailMap = new HashMap<>();
+            sellerEmailMap.put("userEmail",user.getEmail());
             //創建訂單
             Order order = new Order();
             //設定使用者
@@ -179,9 +185,13 @@ public class CheckoutService {
             int sellerId = jsonObject.getInt("sellerId");
             Seller seller = sellerService.selectSellerById(sellerId);
             if(seller!=null){
+                //賣場名稱
+                sellerEmailMap.put("seller",seller.getStoreName());
+
                //設定賣家
                order.setSeller(seller);
             }
+
             //付款方式
             String paymentMethod = object.getString("paymentMethod");
             //未付款
@@ -204,9 +214,15 @@ public class CheckoutService {
             Order order1 = orderService.saveOrder(order);
             //購物車商品陣列
             JSONArray productJSONArray= jsonObject.getJSONArray("productList");
+
+
+            //信件商品陣列
+            ArrayList<HashMap<String,Object>> emailSellerProductList = new ArrayList<>();
             int price=0;
             for (int j=0;j<productJSONArray.length();j++){
-               //獲取cartId
+                //信件商品資訊
+                HashMap<String, Object> emailProductMsg = new HashMap<>();
+                //獲取cartId
                int cartId=productJSONArray.getJSONArray(j).getInt(0);
                //獲取購買數量
                int count =productJSONArray.getJSONArray(j).getInt(1);
@@ -216,6 +232,26 @@ public class CheckoutService {
                 if(shoppingCart!=null){
                     //如果庫存大於
                     if(shoppingCart.getProduct().getStocks()>=count){
+                        //信件商品名稱
+                        emailProductMsg.put("productName",shoppingCart.getProduct().getProductPage().getName());
+                        //信件商品價格
+                        emailProductMsg.put("productPrice",shoppingCart.getProduct().getPrice());
+                        //信件商品數量
+                        emailProductMsg.put("productCount",count);
+                        //信件商品圖片
+                        if("~NoSecondSpecificationClass".equals(shoppingCart.getProduct().getMainSpecificationClassOption().getClassName())){
+                            ProductPagePhoto productPagePhoto = productPagePhotoRepository.selectProductPagePhotoProductSerialNumberByPageId(shoppingCart.getProduct().getProductPage().getId());
+                           emailProductMsg.put("productPhoto",photoUtil.getBase64ByPath(productPagePhoto.getPhotoPath()));
+                          //  emailProductMsg.put("productPhoto",productPagePhoto.getPhotoPath());
+                        }else {
+                            emailProductMsg.put("productPhoto",photoUtil.getBase64ByPath(shoppingCart.getProduct().getMainSpecificationClassOption().getPhotoPath()));
+                           // emailProductMsg.put("productPhoto",shoppingCart.getProduct().getMainSpecificationClassOption().getPhotoPath());
+                        }
+                        //信件主規格名稱
+                        emailProductMsg.put("productMainName", shoppingCart.getProduct().getMainSpecificationClassOption().getName());
+                        //信件次規格名稱
+                        emailProductMsg.put("productSecondName", shoppingCart.getProduct().getSecondSpecificationClassOption().getName());
+
                         //創建訂單明細
                         OrderDetail orderDetail = new OrderDetail();
                         orderDetail.setOrder(order1);
@@ -248,7 +284,11 @@ public class CheckoutService {
                     error=1;
                     msg=cartId+"購物車資訊";
                 }
+                emailSellerProductList.add(emailProductMsg);
             }
+            //存入賣家商品
+            sellerEmailMap.put("emailSellerProductList",emailSellerProductList);
+
             //優惠券id
             int couponId = jsonObject.getInt("couponId");
             //有優惠券
@@ -261,12 +301,16 @@ public class CheckoutService {
                         //判斷最大折扣上限
                         if(coupon.getDiscountMaximum()!=null){
                             //如果扣除金額大於折扣上限
-                            if( price-(price*coupon.getDiscountRate())>coupon.getDiscountMaximum()){
-                                //總價等於-折扣上限
+                            if( price-(Math.ceil(price*coupon.getDiscountRate()))>=coupon.getDiscountMaximum()){
+                                //總價等於=總價-折扣上限
                                 price=price-coupon.getDiscountMaximum();
+                                sellerEmailMap.put("discountPrice",coupon.getDiscountMaximum());
                             }else {
-                                //折扣價格捨棄小數
-                                price=(int)(price*coupon.getDiscountRate());
+                                //折扣價
+                                int pri=(int)Math.ceil(price*coupon.getDiscountRate());
+                                //總價=(原價*折扣去小數)
+                                price=price-pri;
+                                sellerEmailMap.put("discountPrice",pri);
                             }
                         }else {
                             error=1;
@@ -275,6 +319,7 @@ public class CheckoutService {
                      //一般折扣
                     }else {
                         price=price-coupon.getDiscountAmount();
+                        sellerEmailMap.put("discountPrice",coupon.getDiscountAmount());
                     }
                     //根據couponId跟使用者找出優惠券明細
                     CouponDetail couponDetail = couponService.findCouponDetailByUserIdAndCouponId(user.getId(), couponId);
@@ -288,26 +333,45 @@ public class CheckoutService {
                     error=1;
                     msg="超過可用張數";
                 }
+            }else {
+                sellerEmailMap.put("discountPrice",0);
+                sellerEmailMap.put("coupon",null);
             }
             //訂單金額設定
             order1.setAmount(price);
+            sellerEmailMap.put("orderPrice",price);
 
-            //地址狀態
-//            String type = jsonObject.getJSONArray("address").getJSONObject(0).getString("type");
-//            if("FamilyMart".equals(type)){
-//                int storeAddressId = jsonObject.getJSONArray("storeAddressId").getJSONObject(0).getInt("storeAddressId");
-//                System.out.println("地址id"+storeAddressId);
-//            }else {
-//                int anInt = jsonObject.getJSONArray("address").getJSONObject(0).getInt("normalAddressId");
-//                System.out.println("地址id"+anInt);
-//            }
+            JSONObject address = jsonObject.getJSONArray("address").getJSONObject(0);
+            if("FamilyMart".equals(address.getString("type"))){
+            //    int storeAddressId = jsonObject.getJSONArray("storeAddressId").getJSONObject(0).getInt("storeAddressId");
+                //信件設置
+                sellerEmailMap.put("name",address.get("name"));
+                sellerEmailMap.put("phone",address.get("phone"));
+                sellerEmailMap.put("storeName",address.get("storeName"));
+                sellerEmailMap.put("addressDetail",address.get("addressDetail"));
+                sellerEmailMap.put("type",address.get("type"));
+        }else if("Normal".equals(address.getString("type"))){
+              //  int anInt = jsonObject.getJSONArray("address").getJSONObject(0).getInt("normalAddressId");
+                //信件設置
+                sellerEmailMap.put("name",address.get("name"));
+                sellerEmailMap.put("phone",address.get("phone"));
+                sellerEmailMap.put("addressDetail",address.get("addressDetail"));
+                sellerEmailMap.put("addressType",address.get("addressType"));
+                sellerEmailMap.put("type",address.get("type"));
+            }
             orderService.saveOrder(order1);
-            System.out.println("=======================================================");
+            emailMap.add(sellerEmailMap);
         }
+
         if (error==1){
             throw new Exception(msg);
+        }else {
+          //  System.out.println(emailMap);
+          //  System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+            emailUtil.testEmail(emailMap);
+          //  System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+          // throw new Exception(msg);
         }
-
         return "新增成功";
     }
 

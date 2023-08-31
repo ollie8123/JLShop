@@ -26,7 +26,7 @@ public class HomePageController {
 	@PostMapping("/find40Products")
 	public Result find40Products() {
 		
-		List<ProductPage>  productsList = homePageService.find40Products();
+		List<ProductPage>  productsList = homePageService.find20Products();
 		
 		List<Map<String, Object>> responseList = new ArrayList<>();
 		

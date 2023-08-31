@@ -37,4 +37,23 @@ public class photoUtil {
         }
 
     }
+
+
+    public static String getBase64noDaTAByPath(String Path){
+        String base64String= "";
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(new File(Path).exists()?new File(Path):new File("C:\\testphoto\\999.png")));
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()){
+            byte[] bytes = new byte[1024];
+            int len;
+            while ((len=bufferedInputStream.read(bytes))!=-1){
+                byteArrayOutputStream.write(bytes,0,len);
+            }
+            byte[] allBytes = byteArrayOutputStream.toByteArray();
+            base64String +=Base64.getEncoder().encodeToString(allBytes);
+            return  base64String;
+        } catch (IOException e) {
+            return null;
+        }
+
+    }
 }

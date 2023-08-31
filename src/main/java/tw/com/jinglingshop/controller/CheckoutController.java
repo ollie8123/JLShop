@@ -57,7 +57,7 @@ public class CheckoutController {
         try {
             s = checkoutService.generateOrders(object, email);
         } catch (Exception e) {
-            System.out.println("錯誤");
+            System.out.println(e.getMessage());
             return Result.error();
         }
 

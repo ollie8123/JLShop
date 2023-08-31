@@ -2,7 +2,10 @@ package tw.com.jinglingshop.controller;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -23,8 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import tw.com.jinglingshop.model.domain.order.Order;
+import tw.com.jinglingshop.model.domain.order.OrderDetail;
+import tw.com.jinglingshop.model.domain.product.Product;
+import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.model.domain.user.Creditcard;
 import tw.com.jinglingshop.model.domain.user.User;
+import tw.com.jinglingshop.service.HomePageService;
 import tw.com.jinglingshop.service.UserService;
 import tw.com.jinglingshop.utils.JwtUtil;
 import tw.com.jinglingshop.utils.Result;
@@ -35,6 +43,9 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private HomePageService homePageService;
 
 	
 	@PostMapping("/findUserByEmail")
@@ -206,9 +217,58 @@ public class UserController {
 	        e.printStackTrace();
 	        return Result.error("Error");
 	    }
+	    
+	    
+	    
+	    
+	    
+	}
+	
+	@PostMapping("/findUserOrder")
+	public Result findUserOrder(@CookieValue(name ="jwt") String cookieValue) {
+	    String email = JwtUtil.getUserEmailFromToken(cookieValue);
+
+	    List<Order> orderList = userService.findUserOderList(email);
+
+	    List<Map<String, Object>> customOrderInfos = new ArrayList<>();
+
+	    for (Order order : orderList) {
+	        List<OrderDetail> orderDetailList = userService.findUserOderDetailList(order.getId());
+	        List<Map<String, Object>> productInfosForThisOrder = new ArrayList<>();
+
+	        for (OrderDetail orderDetail : orderDetailList) {
+	            Product product = userService.findProducts(orderDetail.getProduct().getId());
+	            ProductPage productPage = product.getProductPage();
+
+	            Map<String, Object> customProductInfo = new HashMap<>();
+	            customProductInfo.put("productName", productPage.getName());
+	            customProductInfo.put("storeName", productPage.getSeller().getStoreName());
+	            customProductInfo.put("productQuantity", orderDetail.getProductQuantity());
+	            customProductInfo.put("price", product.getPrice());
+	            customProductInfo.put("productId", product.getId());
+	            customProductInfo.put("productPageId", productPage.getId()); 
+
+	            // 获取产品图片Base64字符串
+	            String productImgBase64 = homePageService.productsImg(productPage.getId());
+	            if(productImgBase64 != null) {
+	                customProductInfo.put("productImg", productImgBase64);
+	            }
+
+	            productInfosForThisOrder.add(customProductInfo);
+	        }
+
+	        Map<String, Object> customOrderInfo = new HashMap<>();
+	        customOrderInfo.put("orderId", order.getId());
+	        customOrderInfo.put("products", productInfosForThisOrder);
+
+	        customOrderInfos.add(customOrderInfo);
+	    }
+
+	    return Result.success("orderInfos", customOrderInfos);
 	}
 	
 	
+
 	
 }
 
