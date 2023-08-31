@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import tw.com.jinglingshop.model.domain.user.ConvenienceStoreAddress;
-import tw.com.jinglingshop.model.domain.user.NormalAddress;
 
 public interface ConvenienceStoreAddressRepository extends JpaRepository<ConvenienceStoreAddress, Integer> {
 

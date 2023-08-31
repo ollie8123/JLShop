@@ -2,6 +2,7 @@ package tw.com.jinglingshop.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,11 +10,6 @@ import org.springframework.stereotype.Service;
 import tw.com.jinglingshop.model.dao.MainProductCategoryRepository;
 import tw.com.jinglingshop.model.domain.product.MainProductCategory;
 import tw.com.jinglingshop.model.domain.product.SecondProductCategory;
-
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 
 /**

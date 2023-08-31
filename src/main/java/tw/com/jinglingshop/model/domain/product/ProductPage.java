@@ -56,7 +56,7 @@ public class ProductPage {
 
 	/* 以下為資料表關聯(Table Relationship)的屬性宣告區 */
 
-	@JsonIgnore
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@ToString.Exclude
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "productPage")
 	private List<Product> products;

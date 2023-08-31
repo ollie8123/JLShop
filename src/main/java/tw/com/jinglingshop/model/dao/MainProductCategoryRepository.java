@@ -1,15 +1,14 @@
 package tw.com.jinglingshop.model.dao;
 
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-
-import org.springframework.data.repository.query.Param;
-import tw.com.jinglingshop.model.domain.product.MainProductCategory;
-import tw.com.jinglingshop.model.domain.product.MainSpecificationClassOption;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import tw.com.jinglingshop.model.domain.product.MainProductCategory;
 
 /**
  * ClassName:MainProductCategoryRepository

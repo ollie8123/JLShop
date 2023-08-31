@@ -67,37 +67,34 @@ public class SellerService {
 		return null;
 
 	}
-	
+
 	public String checkSellerAccount(String email) {
-		
+
 		Optional<User> existsEamil = userRepository.findByEmail(email);
-		System.out.println("existsEamil="+existsEamil);
-		
-		if(existsEamil.isPresent()) {
+		System.out.println("existsEamil=" + existsEamil);
+
+		if (existsEamil.isPresent()) {
 			User user = existsEamil.get();
-			
-			Optional<Seller> sellerList  = sellerRepository.findByUserId(user.getId());
-			
+
+			Optional<Seller> sellerList = sellerRepository.findByUserId(user.getId());
+
 			if (!sellerList.isPresent()) {
 				return "fail seller not found";
 			}
-			
-			Seller seller= sellerList.get();
 
-			Boolean sellerIsEnable= seller.getIsEnable();
+			Seller seller = sellerList.get();
 
-			if(sellerIsEnable) {
+			Boolean sellerIsEnable = seller.getIsEnable();
+
+			if (sellerIsEnable) {
 				return "success";
 			}
 			return "fail IsEnable false";
-			 
+
 		}
 
 		return "fail email is null";
 
 	}
-	
-
-
 
 }

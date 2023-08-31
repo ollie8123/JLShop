@@ -1,15 +1,16 @@
 package tw.com.jinglingshop.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
+
 import tw.com.jinglingshop.model.dao.ProductPageRepository;
 import tw.com.jinglingshop.model.dao.ProductRepository;
 import tw.com.jinglingshop.model.dao.SellerRepository;
-import tw.com.jinglingshop.model.domain.order.ShoppingCart;
 import tw.com.jinglingshop.model.domain.product.Product;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * ClassName:ProductService

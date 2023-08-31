@@ -1,12 +1,13 @@
 package tw.com.jinglingshop.model.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
-
-import java.util.List;
 
 /**
  * ClassName:ProductPagePhotoRepository
@@ -25,5 +26,11 @@ public interface ProductPagePhotoRepository extends JpaRepository<ProductPagePho
     //根據頁面id搜尋商品頁面圖片第一張圖
     @Query(" from  ProductPagePhoto p where p.productPage.id=:pageId AND p.serialNumber=1 ")
     ProductPagePhoto selectProductPagePhotoProductSerialNumberByPageId(@Param("pageId")Integer pageId);
+    
+    Optional<ProductPagePhoto> findByProductPageIdAndSerialNumber(Integer productPageId,Integer serialNumber);
 
+    
+    
+    
+    
 }

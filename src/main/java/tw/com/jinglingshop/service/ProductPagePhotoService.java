@@ -1,18 +1,17 @@
 package tw.com.jinglingshop.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import tw.com.jinglingshop.model.dao.ProductPagePhotoRepository;
 import tw.com.jinglingshop.model.domain.product.MainSpecificationClassOption;
 import tw.com.jinglingshop.model.domain.product.ProductPage;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
 import tw.com.jinglingshop.utils.photoUtil;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ClassName:ProductPagePhotoService
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProductPagePhotoService {
+
     @Autowired
     ProductPagePhotoRepository productPagePhotoRepository;
 

@@ -1,15 +1,20 @@
 package tw.com.jinglingshop.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
 import tw.com.jinglingshop.model.dao.ProductPagePhotoRepository;
 import tw.com.jinglingshop.model.dao.SellerRepository;
 import tw.com.jinglingshop.model.dao.ShoppingCartRepository;
@@ -20,13 +25,7 @@ import tw.com.jinglingshop.model.domain.product.Product;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
 import tw.com.jinglingshop.model.domain.user.Seller;
 import tw.com.jinglingshop.model.domain.user.User;
-import tw.com.jinglingshop.utils.Result;
 import tw.com.jinglingshop.utils.photoUtil;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * ClassName:ShoppingCartService

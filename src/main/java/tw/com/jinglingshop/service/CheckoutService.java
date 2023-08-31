@@ -1,14 +1,18 @@
 package tw.com.jinglingshop.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import tw.com.jinglingshop.model.dao.CreditcardRepository;
 import tw.com.jinglingshop.model.dao.OrderDetailRepository;
-import tw.com.jinglingshop.model.dao.OrderStatusRepository;
-import tw.com.jinglingshop.model.domain.ProductReview;
 import tw.com.jinglingshop.model.domain.coupon.Coupon;
 import tw.com.jinglingshop.model.domain.coupon.CouponDetail;
 import tw.com.jinglingshop.model.domain.order.Order;
@@ -16,10 +20,12 @@ import tw.com.jinglingshop.model.domain.order.OrderDetail;
 import tw.com.jinglingshop.model.domain.order.OrderStatus;
 import tw.com.jinglingshop.model.domain.order.ShoppingCart;
 import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
-import tw.com.jinglingshop.model.domain.user.*;
+import tw.com.jinglingshop.model.domain.user.ConvenienceStoreAddress;
+import tw.com.jinglingshop.model.domain.user.Creditcard;
+import tw.com.jinglingshop.model.domain.user.NormalAddress;
+import tw.com.jinglingshop.model.domain.user.Seller;
+import tw.com.jinglingshop.model.domain.user.User;
 import tw.com.jinglingshop.utils.photoUtil;
-
-import java.util.*;
 
 /**
  * ClassName:CheckoutService

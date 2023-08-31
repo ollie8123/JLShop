@@ -5,28 +5,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import tw.com.jinglingshop.model.dao.CouponDetailRepository;
 import tw.com.jinglingshop.model.dao.CouponRepository;
 import tw.com.jinglingshop.model.dao.ProductPageRepository;
-import tw.com.jinglingshop.model.dao.SellerRepository;
 import tw.com.jinglingshop.model.dao.UserRepository;
 import tw.com.jinglingshop.model.domain.coupon.Coupon;
 import tw.com.jinglingshop.model.domain.coupon.CouponDetail;
 import tw.com.jinglingshop.model.domain.product.ProductPage;
-import tw.com.jinglingshop.model.domain.user.Seller;
 import tw.com.jinglingshop.model.domain.user.User;
-
-import java.sql.Date;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * ClassName:CouponService

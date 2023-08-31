@@ -1,7 +1,6 @@
 package tw.com.jinglingshop.controller;
 
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,18 +8,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import tw.com.jinglingshop.model.dao.ProductRepository;
-import tw.com.jinglingshop.model.domain.product.ProductPage;
-import tw.com.jinglingshop.service.*;
-import tw.com.jinglingshop.utils.JwtUtil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,8 +21,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
+import tw.com.jinglingshop.model.domain.product.ProductPage;
+import tw.com.jinglingshop.service.CouponService;
 import tw.com.jinglingshop.service.MainProductCategoryService;
+import tw.com.jinglingshop.service.ProductPagePhotoService;
 import tw.com.jinglingshop.service.ProductPageService;
+import tw.com.jinglingshop.service.ProductReviewService;
+import tw.com.jinglingshop.service.ProductService;
+import tw.com.jinglingshop.service.SellerService;
+import tw.com.jinglingshop.service.UserService;
+import tw.com.jinglingshop.utils.JwtUtil;
 import tw.com.jinglingshop.utils.Result;
 
 /**

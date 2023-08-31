@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import tw.com.jinglingshop.model.domain.coupon.Coupon;
-import tw.com.jinglingshop.model.domain.user.Seller;
 
 /**
  * ClassName:CouponRepository

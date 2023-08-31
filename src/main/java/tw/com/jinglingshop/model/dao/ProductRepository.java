@@ -1,13 +1,13 @@
 package tw.com.jinglingshop.model.dao;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import tw.com.jinglingshop.model.domain.product.Product;
-import tw.com.jinglingshop.model.domain.product.ProductPage;
-import tw.com.jinglingshop.model.domain.product.ProductPagePhoto;
 
-import java.util.List;
+import tw.com.jinglingshop.model.domain.product.Product;
 
 /**
  * ClassName:ProductRepository
@@ -48,5 +48,7 @@ public interface ProductRepository extends JpaRepository<Product,Integer> {
 
     //頁面id搜尋商品
      List<Product> findByProductPageId(@Param("pageId")Integer pageId);
+     
+     Optional<Product> findOneByProductPageId(Integer productPageid);
 
 }
