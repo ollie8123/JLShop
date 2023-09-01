@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -68,7 +69,10 @@ public class ProductPageService {
         HashMap<String, Object> hashMap = new HashMap<>();
         // 商品頁面資料
         Map<String, Object> productPage = productPageRepository.selectProductPageDetails(ProductPageId);
-        hashMap.put("productPage", productPage);
+        Map<String, Object> newProductPage = new HashMap<>(productPage);
+        Map<String, Object> sales = productPageRepository.selectProductPageSalesById(ProductPageId);
+        newProductPage.put("sales", sales.get("sales"));
+        hashMap.put("productPage", newProductPage);
         // 搜尋主規格、第二規格名稱
         Map<String, String> specifications = productPageRepository
                 .selectSecondAndMainSpecificationClassOptionNameByProductPageId(ProductPageId);
@@ -143,6 +147,10 @@ public class ProductPageService {
             for (String key : jsonObject.keySet()) {
                 if (key.equals("photoPath")) {
                     map.put(key, photoUtil.getBase64ByPath((String) jsonObject.get(key)));
+                } else if (key.equals("sales")) {
+                    Map<String, Object> id = productPageRepository
+                            .selectProductPageSalesById((Integer) jsonObject.get("id"));
+                    map.put(key, id.get("sales"));
                 } else {
                     Object value = jsonObject.get(key);
                     map.put(key, value);
@@ -176,9 +184,14 @@ public class ProductPageService {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             Map<String, Object> map = new HashMap<String, Object>();
+            System.out.println(map);
             for (String key : jsonObject.keySet()) {
                 if (key.equals("photoPath")) {
                     map.put(key, photoUtil.getBase64ByPath((String) jsonObject.get(key)));
+                } else if (key.equals("sales")) {
+                    Map<String, Object> id = productPageRepository
+                            .selectProductPageSalesById((Integer) jsonObject.get("id"));
+                    map.put(key, id.get("sales"));
                 } else {
                     Object value = jsonObject.get(key);
                     map.put(key, value);
@@ -204,12 +217,16 @@ public class ProductPageService {
                     productPageId, PageRequest.of(0, 5));
             for (ProductPage p : productPages) {
                 Map<String, Object> stringObjectMap = productPageRepository.selectProductPageDetails(p.getId());
+                Map<String, Object> newProductPage = new HashMap<>(stringObjectMap);
+                Map<String, Object> sales = productPageRepository.selectProductPageSalesById(p.getId());
+                newProductPage.put("sales", sales.get("sales"));
+
                 List<ProductPagePhoto> productPagePhotos = p.getProductPagePhotos();
                 Optional<ProductPagePhoto> photoWithSerialNumberOne = productPagePhotos.stream()
                         .filter(photo -> photo.getSerialNumber() == 1)
                         .findFirst();
                 if (photoWithSerialNumberOne.isPresent()) {
-                    Map<String, Object> modifiableMap = new HashMap<>(stringObjectMap);
+                    Map<String, Object> modifiableMap = new HashMap<>(newProductPage);
                     modifiableMap.put("photo",
                             photoUtil.getBase64ByPath(photoWithSerialNumberOne.get().getPhotoPath()));
                     resList.add(modifiableMap);
@@ -236,21 +253,48 @@ public class ProductPageService {
         ProductPageStatus defaultStatus = new ProductPageStatus();
         defaultStatus.setId(1);
         pageData.setProductPageStatus(defaultStatus);
-
         // 若沒有規格則將規格設為預設值
-        if (pageData.getMainSpecificationClassOptions() == null) {
+        List<MainSpecificationClassOption> mainSpecOptions = pageData.getMainSpecificationClassOptions();
+        if (mainSpecOptions == null) {
             MainSpecificationClassOption defaultSpecification = new MainSpecificationClassOption();
             ArrayList<MainSpecificationClassOption> defaultList = new ArrayList<>();
             defaultList.add(defaultSpecification);
             pageData.setMainSpecificationClassOptions(defaultList);
+        } else {
+            Iterator<MainSpecificationClassOption> iterator = mainSpecOptions.iterator();
+            while (iterator.hasNext()) {
+                MainSpecificationClassOption option = iterator.next();
+                if (option.getClassName().isBlank() || option.getClassName() == null) {
+                    option.setClassName("規格一");
+                }
+                if (option.getName() == null || option.getName().isBlank())
+                    iterator.remove();
+            }
         }
-        if (pageData.getSecondSpecificationClassOptions() == null) {
+        List<SecondSpecificationClassOption> secondSpecOptions = pageData.getSecondSpecificationClassOptions();
+        if (secondSpecOptions == null) {
             SecondSpecificationClassOption defaultSpecification = new SecondSpecificationClassOption();
             ArrayList<SecondSpecificationClassOption> defaultList = new ArrayList<>();
             defaultList.add(defaultSpecification);
             pageData.setSecondSpecificationClassOptions(defaultList);
+        } else {
+            Iterator<SecondSpecificationClassOption> iterator = secondSpecOptions.iterator();
+            while (iterator.hasNext()) {
+                SecondSpecificationClassOption option = iterator.next();
+                if (option.getClassName() == null || option.getClassName().isBlank()) {
+                    option.setClassName("規格二");
+                }
+                if (option.getName() == null || option.getName().isBlank()) {
+                    if (secondSpecOptions.size() > 1) {
+                        iterator.remove();
+                    } else {
+                        SecondSpecificationClassOption temp = new SecondSpecificationClassOption();
+                        option.setName(temp.getName());
+                        option.setClassName(temp.getClassName());
+                    }
+                }
+            }
         }
-
         return productPageRepository.save(pageData);
     }
 
@@ -258,15 +302,32 @@ public class ProductPageService {
 
         ProductPage currentPage = productPageRepository.findById(pageId)
                 .orElseThrow(() -> new NoSuchElementException("page id:" + pageId + " is not exist"));
+        List<MainSpecificationClassOption> mainOptions = currentPage.getMainSpecificationClassOptions();
+        List<SecondSpecificationClassOption> secondOptions = currentPage.getSecondSpecificationClassOptions();
         for (Product product : products) {
             product.setSales(0);
             if (product.getMainSpecificationClassOption() == null) {
-                product.setMainSpecificationClassOption(currentPage.getMainSpecificationClassOptions().get(0));
+                product.setMainSpecificationClassOption(mainOptions.get(0));
+            } else {
+                for (MainSpecificationClassOption option : mainOptions) {
+                    if (option.getName().equals(product.getMainSpecificationClassOption().getName())) {
+                        product.setMainSpecificationClassOption(option);
+                    }
+                }
             }
             if (product.getSecondSpecificationClassOption() == null) {
-                product.setSecondSpecificationClassOption(currentPage.getSecondSpecificationClassOptions().get(0));
+                product.setSecondSpecificationClassOption(secondOptions.get(0));
+            } else {
+                for (SecondSpecificationClassOption option : secondOptions) {
+                    if (option.getName().equals(product.getSecondSpecificationClassOption().getName())) {
+                        product.setSecondSpecificationClassOption(option);
+                    } else if (product.getSecondSpecificationClassOption().getName() == null) {
+                        product.setSecondSpecificationClassOption(secondOptions.get(0));
+                    } 
+                }
             }
         }
+
         currentPage.setProducts(products);
         productPageRepository.save(currentPage);
     }
@@ -313,6 +374,39 @@ public class ProductPageService {
             productPageRepository.save(currentPage);
             System.out.println("File written successfully: " + filePath);
         }
+    }
+
+    public void insertSpecificationImg(Integer pageId, MultipartFile[] files) throws IOException {
+        String uploadPath = dataPath.getSpecImgsPath(pageId);
+
+        File uploadDir = new File(uploadPath);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
+        ProductPage currentPage = productPageRepository.findById(pageId)
+                .orElseThrow(() -> new NoSuchElementException("page id:" + pageId + " is not exist"));
+        List<MainSpecificationClassOption> mainSpecList = currentPage.getMainSpecificationClassOptions();
+        int fileNum = 0;
+        for (MultipartFile file : files) {
+            // 取得副檔名
+            String oringinalFileName = file.getOriginalFilename();
+            String extension = "";
+            if (oringinalFileName != null) {
+                extension = oringinalFileName.substring(oringinalFileName.lastIndexOf('.') + 1);
+                if (extension != null) {
+                    extension = "." + extension;
+                }
+            }
+            // 產生單一檔案的路徑
+            String filePath = uploadPath + UUID.randomUUID().toString() + extension;
+            // 儲存檔案至檔案系統
+            file.transferTo(new File(filePath));
+            // 更改規格實體
+            MainSpecificationClassOption currentOption = mainSpecList.get(fileNum);
+            currentOption.setPhotoPath(filePath);
+            fileNum++;
+        }
+        productPageRepository.save(currentPage);
     }
 
     public void pageStatusSetting(Integer pageId, String pageStatusCommand) throws SQLException, NullPointerException {

@@ -91,7 +91,10 @@ public class CouponController {
 
 	@PostMapping("/edit")
 	public Result editById(@RequestBody Coupon coupon) {
-		System.out.println("coupon:"+coupon);
+		if(coupon.getDiscountAmount()==null&&coupon.getDiscountRate()==null) {
+			return Result.error();
+			
+		}
 		try {
 			Coupon finded = couponService.edit(coupon);
 			return Result.success(finded);			
@@ -109,6 +112,16 @@ public class CouponController {
 		}catch(Exception e) {
 			System.out.println("errrrrrrrrrrrrrro");
 			return Result.error();}
+	}
+	
+	@GetMapping("/search")
+	public Result findByCode(@RequestParam String code) {
+		try {
+			return Result.success(couponService.findByCode(code));
+			
+		}catch(Exception e) {
+			return Result.error();		}
+		
 	}
 
 	@GetMapping("/findById/{id}")

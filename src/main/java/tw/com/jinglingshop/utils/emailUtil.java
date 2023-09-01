@@ -1,17 +1,25 @@
 package tw.com.jinglingshop.utils;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.data.domain.Sort;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
-import javax.mail.*;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * ClassName:emailUtil
@@ -24,8 +32,10 @@ import java.util.Properties;
  */
 public class emailUtil {
 
-    public static void testEmail(List<HashMap<String,Object>> emailMsg){
+    public static void testEmail(List<HashMap<String,Object>> emailMsg) throws Exception{
+
         for (int i=0;i<emailMsg.size();i++){
+            ArrayList<String> path = new ArrayList<>();
             String name=(String) emailMsg.get(i).get("name");
             String phone=(String) emailMsg.get(i).get("phone");
             String adderss=(String) emailMsg.get(i).get("addressDetail");
@@ -43,6 +53,7 @@ public class emailUtil {
             List<HashMap<String,Object>> productList =(List) emailMsg.get(i).get("emailSellerProductList");
             for (int j=0;j<productList.size();j++){
                 String productPhoto=(String) productList.get(j).get("productPhoto");
+                path.add(productPhoto);
                 String productName=(String) productList.get(j).get("productName");
                 Integer productCount=(Integer) productList.get(j).get("productCount");
                 Integer productPrice=(Integer) productList.get(j).get("productPrice");
@@ -63,7 +74,8 @@ public class emailUtil {
                                 "                <div class=\"item\">\n" +
                                 "                    <table  style=\"font-size: 25PX;\">\n" +
                                 "                        <tr>\n" +
-                                "                             <td><img src=\"data:image/png;base64," +"圖片"+ "\" alt=\"  \"></td>\n" +
+
+                                "                             <td> <img src=\"cid:image"+j+"\"></td>\n" +
                                 "                            <td>"+productName+"</td>\n" +
                                 "                            <td>"+Specification+"</td>\n" +
                                 "                            <td>"+productCount+"</td></td>\n" +
@@ -74,12 +86,12 @@ public class emailUtil {
                                 "                </div>\n" +
                                 "            </div>";
             }
-            orderEmail(name,phone,adderss,discountPrice,orderPrice,userEmail,list);
+            orderEmail(name,phone,adderss,discountPrice,orderPrice,userEmail,list,path);
         }
 //      int a=1/0;
     }
 
-    public static void orderEmail(String name,String phone,String adderss,Integer discountPrice,Integer orderPrice,String userEmail,String list) {
+    public static void orderEmail(String name,String phone,String adderss,Integer discountPrice,Integer orderPrice,String userEmail,String list,ArrayList path) throws Exception {
         final String sender = "nmsl880120@gmail.com";
         final String urpass = "jvvfbxsvhrtbjpsv";
         Properties set = new Properties();
@@ -101,6 +113,8 @@ public class emailUtil {
             email.setRecipients(Message.RecipientType.TO, InternetAddress.parse(userEmail));
             //標題
             email.setSubject("");
+            Multipart multipart = new MimeMultipart();
+
             BodyPart messageBodyPart = new MimeBodyPart();
             String htmlContent = "<!DOCTYPE html>\n" +
                     "<html lang=\"en\">\n" +
@@ -253,7 +267,7 @@ public class emailUtil {
                     "            <h3>訂單摘要</h3>\n" +
                     "            <div class=\"price\">\n" +
                     "                <span>優惠券</span>\n" +
-                    "                <span>NT$ "+(discountPrice==0?"未使用":discountPrice)+"</span>\n" +
+                    "                <span> "+(discountPrice==0?"未使用":"NT$"+discountPrice)+"</span>\n" +
                     "            </div>\n" +
                     "            <div class=\"total\" >\n" +
                     "                <span style=\"font-size: 30PX;\">總計</span>\n" +
@@ -268,8 +282,19 @@ public class emailUtil {
                     "</html>\n";
 
             messageBodyPart.setContent(htmlContent, "text/html; charset=UTF-8");
-            Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart);
+
+            for (int i=0;i<path.size();i++){
+                String image = getImage((String) path.get(i));
+                // 圖片部分
+                BodyPart messageBodyPart2 = new MimeBodyPart();
+                DataSource source = new FileDataSource(image);
+                messageBodyPart2.setDataHandler(new DataHandler(source));
+                messageBodyPart2.setHeader("Content-ID", "<image"+i+">");
+                multipart.addBodyPart(messageBodyPart2);
+            }
+
+
             email.setContent(multipart);
             transport.sendMessage(email, email.getAllRecipients());
         }catch (MessagingException e) {
@@ -284,7 +309,14 @@ public class emailUtil {
             System.out.println("end");
         }
     }
-
+    public static String getImage(String urlStr) {
+        File file = new File(urlStr);
+        if (file.exists()) {
+            return urlStr;
+        } else {
+            return "C:\\testphoto\\999.png";
+        }
+    }
 
 
 

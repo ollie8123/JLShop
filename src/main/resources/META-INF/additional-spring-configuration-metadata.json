@@ -1,17 +1,19 @@
-{"properties": [
-  {
-    "name": "jingling-shop.data.specification-imgs-folder-name",
-    "type": "java.lang.String",
-    "description": "A description for 'jingling-shop.data.specification-imgs-folder-name'"
-  },
-  {
-    "name": "jingling-shop.data.page-imgs-folder-name",
-    "type": "java.lang.String",
-    "description": "A description for 'jingling-shop.data.page-imgs-folder-name'"
-  },
-  {
-    "name": "jingling-shop.data.base-path",
-    "type": "java.lang.String",
-    "description": "A description for 'jingling-shop.data.base-path'"
-  }
-]}
+{
+	"properties": [
+		{
+			"name": "jingling-shop.data.specification-imgs-folder-name",
+			"type": "java.lang.String",
+			"description": "A description for 'jingling-shop.data.specification-imgs-folder-name'"
+		},
+		{
+			"name": "jingling-shop.data.page-imgs-folder-name",
+			"type": "java.lang.String",
+			"description": "A description for 'jingling-shop.data.page-imgs-folder-name'"
+		},
+		{
+			"name": "jingling-shop.data.base-path",
+			"type": "java.lang.String",
+			"description": "A description for 'jingling-shop.data.base-path'"
+		}
+	]
+}

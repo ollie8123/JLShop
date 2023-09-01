@@ -1,6 +1,7 @@
 package tw.com.jinglingshop.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,17 @@ public class AddressService {
 	
 	@Autowired
 	private UserRepository userRepository;
+
+	public boolean userAddressCountIsNull(String userEmail){
+		Optional<User> user = userRepository.findByEmail(userEmail);
+		Integer integer = userRepository.selectUserAddressByUserEmail(user.get().getId());
+		if(integer>0){
+			return  true;
+		}else {
+			return  false;
+		}
+
+	}
 
 	public NormalAddress addAddress(NormalAddress address) {
 

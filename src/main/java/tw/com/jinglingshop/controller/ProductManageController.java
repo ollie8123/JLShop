@@ -134,6 +134,22 @@ public class ProductManageController {
         }
     }
 
+    @PostMapping(path = "/uploadSpecPhotos")
+    public Result uploadSpecPhotos(@CookieValue(name = "jwt") String cookieValue,
+            @RequestParam Integer pageId,
+            @RequestParam("productSpecImgs") MultipartFile[] files) {
+        String email = JwtUtil.getUserEmailFromToken(cookieValue);
+        if (email == "驗證過期" || email == "驗證失敗" || email == "資料錯誤") {
+            return Result.error("User Not Loggin!");
+        }
+        try {
+            productPageService.insertSpecificationImg(pageId, files);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @GetMapping(path = "/pageCreateDone")
     public Result pageCreateDone(@RequestParam Integer pageId, @RequestParam String pageStatus) {
         try {

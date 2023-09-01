@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.jinglingshop.service.AddressService;
 import tw.com.jinglingshop.service.ShoppingCartService;
 import tw.com.jinglingshop.utils.JwtUtil;
 import tw.com.jinglingshop.utils.Result;
@@ -35,15 +36,21 @@ public class ShoppingCartController {
     @Autowired
     ShoppingCartService shoppingCartService;
 
+    @Autowired
+    AddressService addressService;
 
     //檢查選擇的商品庫存
     @PostMapping("/shoppingCartCheckAvailability")
-    public Result checkAvailability(@RequestBody String body) {
+    public Result checkAvailability(@RequestBody String body,@CookieValue(name ="jwt")String cookieValue) {
+        String email= JwtUtil.getUserEmailFromToken(cookieValue);
         boolean b = shoppingCartService.checkAvailability(body);
-        if(b){
-            return Result.success();
+        boolean b1 = addressService.userAddressCountIsNull(email);
+        if(!b){
+            return Result.error("購物車商品變動");
+        }else if(!b1){
+            return Result.error("請先填寫地址");
         }else {
-            return Result.error();
+            return Result.success();
         }
     }
 

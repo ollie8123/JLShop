@@ -173,6 +173,7 @@ public class PublicController {
     @GetMapping("/selectProduct")
     public Result selectProduct(@Param("ProductPageId")Integer ProductPageId){
         HashMap<String, Object> HashMap = productPageService.selectProduct(ProductPageId);
+
         return Result.success(HashMap);
     }
     //根據關鍵字與條件搜尋商品(待修改)

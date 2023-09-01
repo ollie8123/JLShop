@@ -25,8 +25,19 @@ import java.util.Optional;
 public interface ProductPageRepository extends JpaRepository<ProductPage,Integer> {
 
     //關鍵字模糊搜尋
-    @Query("SELECT p.name FROM ProductPage p WHERE p.name LIKE %:keyWord%")
+    @Query(value = "  select  product_page.name  from product left join product_page on product_page.id=product.product_page_id\n" +
+            "   where product.product_page_id  in( select product_page.id  from product_page  where product_page.name   Like '%'+:keyWord+'%' )\n" +
+            "   group by product_page_id,product_page.name  Having sum(product.stocks)>0",nativeQuery = true)
     List<String> findByNameContaining(@Param("keyWord")String keyWord);
+//
+//    //關鍵字模糊搜尋
+//    @Query("select pg.name " +
+//            "from Product pdt left join ProductPage pg on pg.id=pdt.id " +
+//            "where pdt.id in(SELECT p.name FROM ProductPage p WHERE p.name LIKE %:keyWord%) " +
+//            " group by pg.name " +
+//            "having sum(pdt.stocks)>0 ")
+//    List<String> findByNameContaining(@Param("keyWord")String keyWord);
+
 
     Optional<ProductPage> findById(@Param("pageId")Integer pageId);
 
@@ -70,6 +81,10 @@ public interface ProductPageRepository extends JpaRepository<ProductPage,Integer
             "LEFT JOIN ProductReview  pr on pr.orderDetail.id=od.id " +
             "where p.id=:pageId AND p.productPageStatus.id=2 GROUP BY p.id,p.name ")
     Map<String,Object> selectProductPageDetails(@Param("pageId")Integer pageId);
+
+    @Query(" select  SUM(sales) AS sales  from Product where productPage.id=:pageId ")
+    Map<String,Object> selectProductPageSalesById(@Param("pageId")Integer pageId);
+
     //根據頁面id搜尋主頁第二規格細項
     @Query(" from  SecondSpecificationClassOption s where s.productPage.id=:pageId ")
     List<SecondSpecificationClassOption> selectSecondSpecificationClassOptionByProductPageId(@Param("pageId")Integer pageId);

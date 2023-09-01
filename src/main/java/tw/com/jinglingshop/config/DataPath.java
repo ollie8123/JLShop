@@ -18,4 +18,8 @@ public class DataPath {
     public String getPageImgsPath(Integer pageId) {
         return basePath + pageId + "/" + pageImgsFolderName + "/";
     }
+
+    public String getSpecImgsPath(Integer pageId) {
+        return basePath + pageId + "/" + specificationImgsFolderName + "/";
+    }
 }

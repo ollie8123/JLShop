@@ -25,7 +25,7 @@ public interface MainProductCategoryRepository extends JpaRepository<MainProduct
     List<String[]>selectMainProductCategory();
 
     //關鍵字+上架狀態搜尋，主類ID、主類類名、包含總數量
-    @Query("SELECT p.secondProductCategory.mainProductCategory.id AS id, p.secondProductCategory.mainProductCategory.name AS category ,COUNT (*) as count  " +
+    @Query("SELECT   p.secondProductCategory.mainProductCategory.id AS id, p.secondProductCategory.mainProductCategory.name AS category ,COUNT (DISTINCT p.name) as count  " +
             "FROM ProductPage p " +
             "JOIN Product pdt on pdt.productPage.id=p.id " +
             "WHERE p.name LIKE %:keyword% AND p.productPageStatus.id=2 " +

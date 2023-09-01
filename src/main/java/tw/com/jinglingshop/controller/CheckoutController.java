@@ -58,14 +58,14 @@ public class CheckoutController {
             s = checkoutService.generateOrders(object, email);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return Result.error();
+            return Result.error("購物車更新，請重試");
         }
 
         if("新增成功".equals(s)){
             return Result.success();
         }else {
             System.out.println(s);
-            return Result.error("s");
+            return Result.error(s);
         }
 
     }

@@ -117,6 +117,7 @@ public class CouponService {
                         couponDetail.setUser(User.get());
                         couponDetail.setCoupon(Coupon.get());
                         couponDetail.setCouponCount(Coupon.get().getPerPersonQuota());
+                        Coupon.get().setReceived((int)(Coupon.get().getPerPersonQuota()) );
                         couponDetailRepository.save(couponDetail);
                         return "領取成功";
                     }
@@ -196,4 +197,10 @@ public class CouponService {
         return couponRepository.save(edited);
 
     }
+    
+    public Boolean findByCode(String code) {
+    	Optional<Coupon> findByCode = couponRepository.findByCode(code);
+    	return findByCode.isPresent();
+    	
+    } 
 }

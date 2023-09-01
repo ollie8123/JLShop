@@ -61,12 +61,12 @@ public class ProductPage {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "productPage")
 	private List<Product> products;
 
-	@JsonIgnore
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@ToString.Exclude
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "productPage")
 	private List<MainSpecificationClassOption> mainSpecificationClassOptions;
 
-	@JsonIgnore
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@ToString.Exclude
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "productPage")
 	private List<SecondSpecificationClassOption> secondSpecificationClassOptions;
