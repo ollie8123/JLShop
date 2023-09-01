@@ -41,7 +41,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
          uri.startsWith("/findUserByEmail")||
          uri.startsWith("/checkUserByEmail")||
          uri.startsWith("/addUser")||
-         uri.startsWith("/find40Products")
+         uri.startsWith("/find20Products")
 //         uri.startsWith("/userPhoto")||
 
 //        uri.startsWith("/") // 驗證器放行所有路徑，測試用，網站正式上線時要調整

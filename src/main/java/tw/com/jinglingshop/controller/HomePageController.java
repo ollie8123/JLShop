@@ -23,37 +23,54 @@ public class HomePageController {
 	private HomePageService homePageService;
 	
 	
-	@PostMapping("/find40Products")
-	public Result find40Products() {
-		
-		List<ProductPage>  productsList = homePageService.find20Products();
-		
-		List<Map<String, Object>> responseList = new ArrayList<>();
-		
-		for (ProductPage productPage : productsList) {
+	@PostMapping("/find20Products")
+	public Result find20Products() {
+	    
+	    List<ProductPage> productsList = homePageService.find20Products();
+	    
+	    List<Map<String, Object>> responseList = new ArrayList<>();
+	    
+	    for (ProductPage productPage : productsList) {
 	        Map<String, Object> productMap = new HashMap<>();
 	        productMap.put("product", productPage);
 	        
-	 
 	        String image = homePageService.productsImg(productPage.getId());
 	        productMap.put("image", image);
 	        
-	        Product product = homePageService.findProductInfo(productPage.getId());  // Assuming productPage.getId() provides productPageid
-	        if (product != null) {
-	            productMap.put("price", product.getPrice());
-	            productMap.put("sales", product.getSales());
+	        List<Product> productList = homePageService.findProductInfo(productPage.getId());  // Assuming productPage.getId() provides productPageid
+	        if (productList != null && !productList.isEmpty()) {
+	            if (productList.size() == 1) {
+	                productMap.put("price", productList.get(0).getPrice());
+	            } else {
+	                // Get the minimum and maximum prices from the list
+	                int minPrice = Integer.MAX_VALUE;
+	                int maxPrice = Integer.MIN_VALUE;
+	                
+	                for (Product product : productList) {
+	                    int price = product.getPrice();
+	                    if (price < minPrice) {
+	                        minPrice = price;
+	                    }
+	                    if (price > maxPrice) {
+	                        maxPrice = price;
+	                    }
+	                }
+	                
+	                productMap.put("minPrice", minPrice);
+	                productMap.put("maxPrice", maxPrice);
+	            }
+	            
+	            // Assuming all the products in the list have the same sales, if different logic is required, please adjust
+	            productMap.put("sales", productList.get(0).getSales());
 	        }
 	        
-	        
 	        responseList.add(productMap);
+	        
+	        
 	    }
-		
-		
-		
 
-		
-		return Result.success("productsList", responseList);
-		
+	    System.out.println(responseList);
+	    return Result.success("productsList", responseList);
 	}
 	
 	

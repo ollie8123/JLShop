@@ -72,12 +72,9 @@ public class HomePageService {
 	 }
 	
 	
-	public Product findProductInfo(Integer productPageid){
+	public List<Product> findProductInfo(Integer productPageid){
 		
-		Optional<Product>  productData= productRepository.findOneByProductPageId(productPageid);
-		Product product = productData.get();
-		
-		return product;
+		return productRepository.findOneByProductPageId(productPageid);
 		
 	}
 	

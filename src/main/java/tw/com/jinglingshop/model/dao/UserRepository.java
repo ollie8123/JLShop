@@ -1,12 +1,11 @@
 package tw.com.jinglingshop.model.dao;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import tw.com.jinglingshop.model.domain.user.User;
 
 public interface UserRepository extends JpaRepository<User, Integer>{

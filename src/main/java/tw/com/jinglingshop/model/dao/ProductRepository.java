@@ -49,6 +49,6 @@ public interface ProductRepository extends JpaRepository<Product,Integer> {
     //頁面id搜尋商品
      List<Product> findByProductPageId(@Param("pageId")Integer pageId);
      
-     Optional<Product> findOneByProductPageId(Integer productPageid);
+     List<Product> findOneByProductPageId(Integer productPageid);
 
 }

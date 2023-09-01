@@ -327,7 +327,6 @@ public class ProductPageService {
                 }
             }
         }
-
         currentPage.setProducts(products);
         productPageRepository.save(currentPage);
     }
